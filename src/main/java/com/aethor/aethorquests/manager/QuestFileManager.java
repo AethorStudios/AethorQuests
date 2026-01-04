@@ -120,69 +120,11 @@ public class QuestFileManager {
     
     /**
      * Save a single quest to the file
+     * Note: This is a placeholder - proper serialization should be implemented
      */
     public void saveQuest(QuestDefinition quest) {
-        File file = new File(plugin.getDataFolder(), "quests.yml");
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-        
-        String path = "quests." + quest.getId();
-        
-        config.set(path + ".id", quest.getId());
-        config.set(path + ".title", quest.getTitle());
-        config.set(path + ".description", quest.getDescription());
-        config.set(path + ".giverNpcId", quest.getGiverNpcId());
-        
-        // Requirements
-        config.set(path + ".requirements.minLevel", quest.getRequirements().getMinLevel());
-        config.set(path + ".requirements.requiredQuestsCompleted", quest.getRequirements().getRequiredQuestsCompleted());
-        
-        // Objectives
-        List<Map<String, Object>> objectivesList = new ArrayList<>();
-        for (QuestObjective obj : quest.getObjectives()) {
-            Map<String, Object> objMap = new HashMap<>();
-            objMap.put("type", obj.getType().name());
-            objMap.put("targetId", obj.getTargetId());
-            objMap.put("required", obj.getRequiredAmount());
-            if (obj.getType() == ObjectiveType.VISIT && obj.getTargetLocation() != null) {
-                objMap.put("location", obj.getTargetLocation().toMap());
-            }
-            objectivesList.add(objMap);
-        }
-        config.set(path + ".objectives", objectivesList);
-        
-        // Rewards
-        Map<String, Object> rewardMap = new HashMap<>();
-        if (quest.getRewards().getXp() > 0) {
-            rewardMap.put("xp", quest.getRewards().getXp());
-        }
-        if (!quest.getRewards().getItems().isEmpty()) {
-            List<Map<String, Object>> itemsList = new ArrayList<>();
-            for (ItemReward item : quest.getRewards().getItems()) {
-                Map<String, Object> itemMap = new HashMap<>();
-                itemMap.put("type", item.getMaterial().name());
-                itemMap.put("amount", item.getAmount());
-                if (item.hasDisplayName()) {
-                    itemMap.put("name", item.getDisplayName());
-                }
-                if (item.hasLore()) {
-                    itemMap.put("lore", item.getLore());
-                }
-                itemsList.add(itemMap);
-            }
-            rewardMap.put("items", itemsList);
-        }
-        if (!quest.getRewards().getCommands().isEmpty()) {
-            rewardMap.put("commands", quest.getRewards().getCommands());
-        }
-        config.set(path + ".rewards", rewardMap);
-        
-        // Save file
-        try {
-            config.save(file);
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to save quest: " + quest.getId());
-            e.printStackTrace();
-        }
+        // For now, save all quests since partial save is complex
+        saveAllQuests();
     }
     
     /**

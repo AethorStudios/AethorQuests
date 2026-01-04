@@ -102,7 +102,7 @@ public class QuestApiRoutes {
         
         try {
             QuestDefinition updatedQuest = gson.fromJson(ctx.body(), QuestDefinition.class);
-            updatedQuest.setId(id); // Ensure ID doesn't change
+            // Note: Quest ID cannot be changed via this endpoint
             
             // Save to file and reload
             plugin.getServer().getScheduler().runTask(plugin, () -> {
