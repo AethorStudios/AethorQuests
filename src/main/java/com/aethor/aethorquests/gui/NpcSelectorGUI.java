@@ -1,9 +1,9 @@
 package com.aethor.aethorquests.gui;
 
-import com.aethor.aethorquests.AethorQuestsPlugin;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,9 +11,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.aethor.aethorquests.AethorQuestsPlugin;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * GUI for selecting which NPC to edit quests for
@@ -34,18 +36,19 @@ public class NpcSelectorGUI {
         Inventory inv = Bukkit.createInventory(null, 54, 
             Component.text("Quest Editor - Select NPC", NamedTextColor.DARK_PURPLE, TextDecoration.BOLD));
         
-        // Get all unique NPC IDs from quests
-        Set<String> npcIds = plugin.getQuestManager().getAllNpcIds();
+        // Get all unique NPC IDs - combine quest-assigned NPCs and actual server NPCs
+        Set<String> npcIds = new java.util.HashSet<>(plugin.getQuestManager().getAllNpcIds());
         
-        // Also get NPCs from AethorNPCS API if available
+        // Get all NPCs from AethorNPCS API if available
         if (plugin.getNpcHook().isEnabled() && plugin.getNpcHook().getApi() != null) {
             try {
-                // Try to get all NPC IDs from the API
                 var api = plugin.getNpcHook().getApi();
-                // Note: This depends on AethorNPCS API having a method to list all NPCs
-                // If not available, we'll just use quest-assigned NPCs
+                var allNpcs = api.getAllNpcs();
+                for (var npc : allNpcs) {
+                    npcIds.add(npc.getId());
+                }
             } catch (Exception e) {
-                // Silently continue with quest-assigned NPCs only
+                plugin.getLogger().warning("Failed to get NPCs from AethorNPCS API: " + e.getMessage());
             }
         }
         
@@ -56,7 +59,23 @@ public class NpcSelectorGUI {
             ItemStack item = new ItemStack(Material.PLAYER_HEAD);
             ItemMeta meta = item.getItemMeta();
             
-            meta.displayName(Component.text(npcId, NamedTextColor.YELLOW, TextDecoration.BOLD));
+            // Try to get display name from NPC API
+            String displayName = npcId;
+            if (plugin.getNpcHook().isEnabled() && plugin.getNpcHook().getApi() != null) {
+                try {
+                    var npcOpt = plugin.getNpcHook().getApi().getNpc(npcId);
+                    if (npcOpt.isPresent()) {
+                        String npcDisplayName = npcOpt.get().getDisplayName();
+                        if (npcDisplayName != null && !npcDisplayName.isEmpty()) {
+                            displayName = npcDisplayName;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Use NPC ID as fallback
+                }
+            }
+            
+            meta.displayName(Component.text(displayName, NamedTextColor.YELLOW, TextDecoration.BOLD));
             
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text("NPC ID: " + npcId, NamedTextColor.GRAY));
