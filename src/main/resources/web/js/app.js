@@ -366,11 +366,26 @@ class AethorQuestsApp {
                 document.getElementById('rewardMoney').value = quest.rewards?.money || 0;
                 (quest.rewards.items || []).forEach(item => this.addItemRewardField(item));
                 (quest.rewards.commands || []).forEach(cmd => this.addCommandField(cmd));
+                
+                // Populate dialogue
+                document.getElementById('dialogueAccept').value = quest.dialogue?.acceptDialogue?.join('\n') || '';
+                document.getElementById('dialogueProgress').value = quest.dialogue?.progressDialogue?.join('\n') || '';
+                document.getElementById('dialogueCompletion').value = quest.dialogue?.completionDialogue?.join('\n') || '';
             }
         } else {
             form.reset();
             document.getElementById('editorTitle').textContent = 'Create Quest';
             document.getElementById('questId').disabled = false;
+            
+            // Clear all dynamic fields
+            document.getElementById('objectivesList').innerHTML = '';
+            document.getElementById('itemRewardsList').innerHTML = '';
+            document.getElementById('commandsList').innerHTML = '';
+            
+            // Clear dialogue fields
+            document.getElementById('dialogueAccept').value = '';
+            document.getElementById('dialogueProgress').value = '';
+            document.getElementById('dialogueCompletion').value = '';
         }
         
         modal.classList.add('show');
@@ -448,6 +463,11 @@ class AethorQuestsApp {
                     money: parseFloat(document.getElementById('rewardMoney').value) || 0,
                     items: items,
                     commands: commands
+                },
+                dialogue: {
+                    acceptDialogue: document.getElementById('dialogueAccept').value.split('\n').filter(l => l.trim()),
+                    progressDialogue: document.getElementById('dialogueProgress').value.split('\n').filter(l => l.trim()),
+                    completionDialogue: document.getElementById('dialogueCompletion').value.split('\n').filter(l => l.trim())
                 }
             };
             

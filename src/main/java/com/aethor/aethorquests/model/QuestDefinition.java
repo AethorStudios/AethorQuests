@@ -14,6 +14,7 @@ public class QuestDefinition {
     private QuestRequirements requirements;
     private List<Objective> objectives;
     private Reward rewards;
+    private Dialogue dialogue;
     
     public QuestDefinition(String id) {
         this.id = id;
@@ -21,6 +22,7 @@ public class QuestDefinition {
         this.requirements = new QuestRequirements();
         this.objectives = new ArrayList<>();
         this.rewards = new Reward();
+        this.dialogue = new Dialogue();
     }
     
     public String getId() {
@@ -77,6 +79,14 @@ public class QuestDefinition {
     
     public void setRewards(Reward rewards) {
         this.rewards = rewards;
+    }
+    
+    public Dialogue getDialogue() {
+        return dialogue;
+    }
+    
+    public void setDialogue(Dialogue dialogue) {
+        this.dialogue = dialogue;
     }
     
     /**

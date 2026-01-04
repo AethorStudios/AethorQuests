@@ -179,6 +179,23 @@
                             <button type="button" class="btn btn-success" id="addCommandBtn" style="margin-top: 12px;">+ Add Command</button>
                         </div>
 
+                        <h4 style="margin: 24px 0 16px; color: #94a3b8;">💬 Dialogue</h4>
+                        <div class="form-group">
+                            <label>Accept Dialogue (when quest is accepted)</label>
+                            <textarea id="dialogueAccept" rows="2" placeholder="Thank you for helping us! The villagers need your aid."></textarea>
+                            <small style="color: var(--text-secondary); font-size: 12px;">One line per row. Use & for color codes (e.g., &aGreen &cRed)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>In-Progress Dialogue (when quest is in progress)</label>
+                            <textarea id="dialogueProgress" rows="2" placeholder="Keep working on those tasks! You're doing great."></textarea>
+                            <small style="color: var(--text-secondary); font-size: 12px;">Shown when player talks to NPC while quest is active</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Completion Dialogue (when turning in quest)</label>
+                            <textarea id="dialogueCompletion" rows="2" placeholder="Excellent work! Here's your reward."></textarea>
+                            <small style="color: var(--text-secondary); font-size: 12px;">Shown when player completes the quest</small>
+                        </div>
+
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary modal-close">Cancel</button>
                             <button type="submit" class="btn btn-primary">Save Quest</button>
