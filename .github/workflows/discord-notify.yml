@@ -19,7 +19,7 @@ jobs:
         
     - name: Send Discord Notification
       env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
         if [ -z "$DISCORD_WEBHOOK" ]; then
           echo "Discord webhook not configured, skipping notification"
