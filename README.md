@@ -2,8 +2,8 @@
 
 **Production-quality quest system for Paper Minecraft 1.21.8**
 
-[![Build](https://img.shields.io/github/actions/workflow/status/YOUR_ORG/AethorQuests/build.yml?branch=main)](https://github.com/YOUR_ORG/AethorQuests/actions)
-[![Release](https://img.shields.io/github/v/release/YOUR_ORG/AethorQuests)](https://github.com/YOUR_ORG/AethorQuests/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/AethorStudios/AethorQuests/build.yml?branch=main)](https://github.com/AethorStudios/AethorQuests/actions)
+[![Release](https://img.shields.io/github/v/release/AethorStudios/AethorQuests)](https://github.com/AethorStudios/AethorQuests/releases/latest)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)
 
 AethorQuests is a comprehensive quest plugin that seamlessly integrates with **AethorNPCS** to provide a rich questing experience. Players can interact with NPCs to accept, track, and complete quests with multiple objective types.
