@@ -364,8 +364,8 @@ class AethorQuestsApp {
                 // Populate rewards
                 document.getElementById('rewardXp').value = quest.rewards?.xp || 0;
                 document.getElementById('rewardMoney').value = quest.rewards?.money || 0;
-                (quest.rewards.items || []).forEach(item => this.addItemRewardField(item));
-                (quest.rewards.commands || []).forEach(cmd => this.addCommandField(cmd));
+                (quest.rewards?.items || []).forEach(item => this.addItemRewardField(item));
+                (quest.rewards?.commands || []).forEach(cmd => this.addCommandField(cmd));
                 
                 // Populate dialogue
                 document.getElementById('dialogueAccept').value = quest.dialogue?.acceptDialogue?.join('\n') || '';
