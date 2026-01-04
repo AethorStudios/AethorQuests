@@ -65,15 +65,35 @@
                 <!-- Quest Flow View -->
                 <div id="flowView" class="view">
                     <div class="view-header">
-                        <h2>Quest Flow Visualizer</h2>
+                        <h2>Quest Chain Builder</h2>
                         <div class="flow-controls">
-                            <button id="flowZoomIn" class="btn btn-secondary">🔍 Zoom In</button>
-                            <button id="flowZoomOut" class="btn btn-secondary">🔍 Zoom Out</button>
-                            <button id="flowReset" class="btn btn-secondary">↺ Reset View</button>
+                            <button id="flowAddQuest" class="btn btn-success">+ Add Quest to Chain</button>
+                            <button id="flowClearChain" class="btn btn-danger">Clear Chain</button>
+                            <button id="flowSaveChain" class="btn btn-primary">💾 Save Chain</button>
                         </div>
                     </div>
+                    <div class="flow-instructions">
+                        <p>🔗 <strong>Drag</strong> from one quest to another to create a dependency. <strong>Click</strong> a quest to remove it from the chain.</p>
+                    </div>
                     <div id="flowCanvas" class="flow-canvas">
-                        <canvas id="questFlowCanvas"></canvas>
+                        <svg id="questFlowSvg" class="flow-svg"></svg>
+                        <div id="flowNodes" class="flow-nodes"></div>
+                    </div>
+                    
+                    <!-- Quest Selector Modal -->
+                    <div id="questSelectorModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>Select Quest to Add</h3>
+                                <button class="modal-close">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="search-bar">
+                                    <input type="text" id="questSelectorSearch" placeholder="Search quests...">
+                                </div>
+                                <div id="questSelectorList" class="quest-selector-list"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

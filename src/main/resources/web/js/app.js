@@ -630,243 +630,349 @@ class AethorQuestsApp {
     }
     
     initFlowView() {
-        const canvas = document.getElementById('questFlowCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Set canvas size
-        const container = document.getElementById('flowCanvas');
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
-        
-        // Flow state
-        if (!this.flowState) {
-            this.flowState = {
-                zoom: 1,
-                offsetX: 0,
-                offsetY: 0,
-                dragging: false,
-                dragStart: { x: 0, y: 0 }
+        if (!this.chainState) {
+            this.chainState = {
+                nodes: [],
+                connections: []
             };
         }
         
-        this.renderFlowCanvas(ctx, canvas);
-        this.setupFlowControls(canvas, ctx);
+        this.renderFlowView();
+        this.setupFlowEventListeners();
     }
     
-    renderFlowCanvas(ctx, canvas) {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    renderFlowView() {
+        const nodesContainer = document.getElementById('flowNodes');
+        const svg = document.getElementById('questFlowSvg');
         
-        // Apply zoom and pan
-        ctx.save();
-        ctx.translate(this.flowState.offsetX, this.flowState.offsetY);
-        ctx.scale(this.flowState.zoom, this.flowState.zoom);
+        // Clear existing
+        nodesContainer.innerHTML = '';
+        svg.innerHTML = '';
         
-        // Draw grid
-        this.drawGrid(ctx, canvas);
+        // Render nodes
+        this.chainState.nodes.forEach((node, index) => {
+            this.createFlowNode(node, index);
+        });
         
-        // Calculate positions for each quest
-        const positions = this.calculateQuestPositions();
-        
-        // Draw connections first (behind nodes)
-        this.drawConnections(ctx, positions);
-        
-        // Draw quest nodes
-        this.drawQuestNodes(ctx, positions);
-        
-        ctx.restore();
+        // Render connections
+        this.renderConnections();
     }
     
-    drawGrid(ctx, canvas) {
-        const gridSize = 50;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-        ctx.lineWidth = 1;
+    createFlowNode(questData, index) {
+        const nodesContainer = document.getElementById('flowNodes');
+        const node = document.createElement('div');
+        node.className = 'flow-node';
+        node.dataset.questId = questData.id;
+        node.dataset.index = index;
         
-        for (let x = 0; x < canvas.width / this.flowState.zoom; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height / this.flowState.zoom);
-            ctx.stroke();
-        }
+        // Calculate position (auto-layout in grid)
+        const x = 50 + (index % 3) * 300;
+        const y = 50 + Math.floor(index / 3) * 200;
+        node.style.left = x + 'px';
+        node.style.top = y + 'px';
         
-        for (let y = 0; y < canvas.height / this.flowState.zoom; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width / this.flowState.zoom, y);
-            ctx.stroke();
-        }
+        const objCount = questData.objectives?.length || 0;
+        const prereqCount = questData.requirements?.requiredQuestsCompleted?.length || 0;
+        
+        node.innerHTML = `
+            <div class="flow-node-header">
+                <span>${questData.title}</span>
+                <button class="flow-node-remove" onclick="app.removeNodeFromChain(${index})">×</button>
+            </div>
+            <div class="flow-node-id">${questData.id}</div>
+            <div class="flow-node-objectives">${objCount} objective${objCount !== 1 ? 's' : ''}</div>
+            ${prereqCount > 0 ? `<div class="flow-node-id">Requires: ${prereqCount} quest${prereqCount !== 1 ? 's' : ''}</div>` : ''}
+            <div class="flow-node-connect">
+                <div class="flow-connect-point input" title="Prerequisites (drag from other quest's output here)"></div>
+                <div class="flow-connect-point output" title="Drag to another quest to make it require this quest"></div>
+            </div>
+        `;
+        
+        nodesContainer.appendChild(node);
+        this.makeNodeDraggable(node);
+        this.setupConnectionPoints(node, index);
     }
     
-    calculateQuestPositions() {
-        const positions = {};
-        const spacing = 300;
-        const startX = 100;
-        const startY = 100;
+    makeNodeDraggable(node) {
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
         
-        // Group quests by NPC
-        const npcGroups = {};
-        this.quests.forEach(quest => {
-            if (!npcGroups[quest.giverNpcId]) {
-                npcGroups[quest.giverNpcId] = [];
+        node.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('flow-connect-point') || 
+                e.target.classList.contains('flow-node-remove')) {
+                return;
             }
-            npcGroups[quest.giverNpcId].push(quest);
+            
+            isDragging = true;
+            node.classList.add('dragging');
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = node.offsetLeft;
+            initialY = node.offsetTop;
+            
+            const onMouseMove = (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                node.style.left = (initialX + dx) + 'px';
+                node.style.top = (initialY + dy) + 'px';
+                this.renderConnections();
+            };
+            
+            const onMouseUp = () => {
+                isDragging = false;
+                node.classList.remove('dragging');
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         });
-        
-        // Position quests in columns by NPC
-        let columnIndex = 0;
-        Object.entries(npcGroups).forEach(([npcId, quests]) => {
-            quests.forEach((quest, index) => {
-                positions[quest.id] = {
-                    x: startX + (columnIndex * spacing),
-                    y: startY + (index * 150),
-                    quest: quest
-                };
-            });
-            columnIndex++;
-        });
-        
-        return positions;
     }
     
-    drawConnections(ctx, positions) {
-        // Draw lines between connected quests
-        Object.values(positions).forEach(pos1 => {
-            Object.values(positions).forEach(pos2 => {
-                if (pos1.quest.giverNpcId === pos2.quest.giverNpcId && pos1 !== pos2) {
-                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(pos1.x + 100, pos1.y + 50);
-                    ctx.lineTo(pos2.x + 100, pos2.y + 50);
-                    ctx.stroke();
+    setupConnectionPoints(node, nodeIndex) {
+        const outputPoint = node.querySelector('.flow-connect-point.output');
+        let isConnecting = false;
+        let tempLine = null;
+        
+        outputPoint.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isConnecting = true;
+            
+            const svg = document.getElementById('questFlowSvg');
+            tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tempLine.setAttribute('stroke', '#6366f1');
+            tempLine.setAttribute('stroke-width', '3');
+            tempLine.setAttribute('stroke-dasharray', '5,5');
+            
+            const rect = outputPoint.getBoundingClientRect();
+            const canvasRect = svg.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2 - canvasRect.left;
+            const startY = rect.top + rect.height / 2 - canvasRect.top;
+            
+            tempLine.setAttribute('x1', startX);
+            tempLine.setAttribute('y1', startY);
+            tempLine.setAttribute('x2', startX);
+            tempLine.setAttribute('y2', startY);
+            svg.appendChild(tempLine);
+            
+            const onMouseMove = (e) => {
+                if (!isConnecting || !tempLine) return;
+                const x = e.clientX - canvasRect.left;
+                const y = e.clientY - canvasRect.top;
+                tempLine.setAttribute('x2', x);
+                tempLine.setAttribute('y2', y);
+            };
+            
+            const onMouseUp = (e) => {
+                isConnecting = false;
+                if (tempLine) {
+                    tempLine.remove();
+                    tempLine = null;
                 }
-            });
+                
+                // Check if we released over an input point
+                const target = document.elementFromPoint(e.clientX, e.clientY);
+                if (target && target.classList.contains('flow-connect-point') && 
+                    target.classList.contains('input')) {
+                    const targetNode = target.closest('.flow-node');
+                    const targetIndex = parseInt(targetNode.dataset.index);
+                    
+                    if (targetIndex !== nodeIndex) {
+                        this.createConnection(nodeIndex, targetIndex);
+                    }
+                }
+                
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         });
     }
     
-    drawQuestNodes(ctx, positions) {
-        Object.values(positions).forEach(pos => {
-            const x = pos.x;
-            const y = pos.y;
-            const width = 200;
-            const height = 100;
-            
-            // Node background with gradient
-            const gradient = ctx.createLinearGradient(x, y, x, y + height);
-            gradient.addColorStop(0, 'rgba(30, 41, 59, 0.95)');
-            gradient.addColorStop(1, 'rgba(51, 65, 85, 0.95)');
-            
-            ctx.fillStyle = gradient;
-            ctx.strokeStyle = '#6366f1';
-            ctx.lineWidth = 2;
-            
-            // Draw rounded rectangle
-            this.roundRect(ctx, x, y, width, height, 12);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Draw title
-            ctx.fillStyle = '#f1f5f9';
-            ctx.font = 'bold 14px Segoe UI';
-            ctx.fillText(this.truncateText(ctx, pos.quest.title, width - 20), x + 10, y + 25);
-            
-            // Draw ID
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '11px Segoe UI';
-            ctx.fillText(pos.quest.id, x + 10, y + 45);
-            
-            // Draw objective count
-            const objCount = pos.quest.objectives?.length || 0;
-            ctx.fillStyle = '#10b981';
-            ctx.fillText(`${objCount} objective${objCount !== 1 ? 's' : ''}`, x + 10, y + 65);
-            
-            // Draw NPC badge
-            ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
-            this.roundRect(ctx, x + 10, y + 75, width - 20, 18, 6);
-            ctx.fill();
-            ctx.fillStyle = '#6366f1';
-            ctx.font = '10px Segoe UI';
-            ctx.fillText(`NPC: ${pos.quest.giverNpcId}`, x + 15, y + 87);
-        });
-    }
-    
-    roundRect(ctx, x, y, width, height, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-    }
-    
-    truncateText(ctx, text, maxWidth) {
-        if (ctx.measureText(text).width <= maxWidth) {
-            return text;
-        }
+    createConnection(fromIndex, toIndex) {
+        // Check if connection already exists
+        const exists = this.chainState.connections.some(
+            conn => conn.from === fromIndex && conn.to === toIndex
+        );
         
-        let truncated = text;
-        while (ctx.measureText(truncated + '...').width > maxWidth && truncated.length > 0) {
-            truncated = truncated.slice(0, -1);
+        if (!exists) {
+            this.chainState.connections.push({ from: fromIndex, to: toIndex });
+            
+            // Update the quest's prerequisites
+            const fromQuest = this.chainState.nodes[fromIndex];
+            const toQuest = this.chainState.nodes[toIndex];
+            
+            if (!toQuest.requirements) {
+                toQuest.requirements = { minLevel: 1, requiredQuestsCompleted: [] };
+            }
+            if (!toQuest.requirements.requiredQuestsCompleted) {
+                toQuest.requirements.requiredQuestsCompleted = [];
+            }
+            
+            if (!toQuest.requirements.requiredQuestsCompleted.includes(fromQuest.id)) {
+                toQuest.requirements.requiredQuestsCompleted.push(fromQuest.id);
+            }
+            
+            this.renderFlowView();
         }
-        return truncated + '...';
     }
     
-    setupFlowControls(canvas, ctx) {
-        // Pan with mouse drag
-        canvas.addEventListener('mousedown', (e) => {
-            this.flowState.dragging = true;
-            this.flowState.dragStart = { x: e.clientX, y: e.clientY };
-        });
+    renderConnections() {
+        const svg = document.getElementById('questFlowSvg');
+        const canvasRect = svg.getBoundingClientRect();
         
-        canvas.addEventListener('mousemove', (e) => {
-            if (this.flowState.dragging) {
-                const dx = e.clientX - this.flowState.dragStart.x;
-                const dy = e.clientY - this.flowState.dragStart.y;
-                this.flowState.offsetX += dx;
-                this.flowState.offsetY += dy;
-                this.flowState.dragStart = { x: e.clientX, y: e.clientY };
-                this.renderFlowCanvas(ctx, canvas);
+        // Clear existing connections (keep temp lines)
+        Array.from(svg.children).forEach(child => {
+            if (!child.hasAttribute('stroke-dasharray')) {
+                child.remove();
             }
         });
         
-        canvas.addEventListener('mouseup', () => {
-            this.flowState.dragging = false;
+        this.chainState.connections.forEach(conn => {
+            const fromNode = document.querySelector(`[data-index="${conn.from}"]`);
+            const toNode = document.querySelector(`[data-index="${conn.to}"]`);
+            
+            if (!fromNode || !toNode) return;
+            
+            const fromPoint = fromNode.querySelector('.flow-connect-point.output');
+            const toPoint = toNode.querySelector('.flow-connect-point.input');
+            
+            const fromRect = fromPoint.getBoundingClientRect();
+            const toRect = toPoint.getBoundingClientRect();
+            
+            const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left;
+            const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top;
+            const x2 = toRect.left + toRect.width / 2 - canvasRect.left;
+            const y2 = toRect.top + toRect.height / 2 - canvasRect.top;
+            
+            // Create curved path
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const midX = (x1 + x2) / 2;
+            const d = `M ${x1} ${y1} Q ${midX} ${y1}, ${midX} ${(y1 + y2) / 2} T ${x2} ${y2}`;
+            
+            path.setAttribute('d', d);
+            path.setAttribute('stroke', '#10b981');
+            path.setAttribute('stroke-width', '3');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('filter', 'drop-shadow(0 0 4px rgba(16, 185, 129, 0.5))');
+            
+            // Add arrow marker
+            const defs = svg.querySelector('defs') || svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
+            if (!defs.querySelector('#arrowhead')) {
+                const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                marker.setAttribute('id', 'arrowhead');
+                marker.setAttribute('markerWidth', '10');
+                marker.setAttribute('markerHeight', '10');
+                marker.setAttribute('refX', '9');
+                marker.setAttribute('refY', '3');
+                marker.setAttribute('orient', 'auto');
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', '0 0, 10 3, 0 6');
+                polygon.setAttribute('fill', '#10b981');
+                marker.appendChild(polygon);
+                defs.appendChild(marker);
+            }
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+            
+            svg.appendChild(path);
+        });
+    }
+    
+    setupFlowEventListeners() {
+        document.getElementById('flowAddQuest')?.addEventListener('click', () => {
+            this.openQuestSelector();
         });
         
-        canvas.addEventListener('mouseleave', () => {
-            this.flowState.dragging = false;
+        document.getElementById('flowClearChain')?.addEventListener('click', () => {
+            if (confirm('Clear all quests from the chain?')) {
+                this.chainState.nodes = [];
+                this.chainState.connections = [];
+                this.renderFlowView();
+            }
         });
         
-        // Zoom controls
-        document.getElementById('flowZoomIn')?.addEventListener('click', () => {
-            this.flowState.zoom *= 1.2;
-            this.renderFlowCanvas(ctx, canvas);
+        document.getElementById('flowSaveChain')?.addEventListener('click', () => {
+            this.saveQuestChain();
+        });
+    }
+    
+    openQuestSelector() {
+        const modal = document.getElementById('questSelectorModal');
+        const list = document.getElementById('questSelectorList');
+        
+        list.innerHTML = '';
+        
+        // Filter out quests already in chain
+        const availableQuests = this.quests.filter(q => 
+            !this.chainState.nodes.some(n => n.id === q.id)
+        );
+        
+        availableQuests.forEach(quest => {
+            const item = document.createElement('div');
+            item.className = 'quest-selector-item';
+            item.innerHTML = `
+                <div class="quest-selector-item-title">${quest.title}</div>
+                <div class="quest-selector-item-id">${quest.id}</div>
+            `;
+            item.onclick = () => {
+                this.addQuestToChain(quest);
+                modal.classList.remove('show');
+            };
+            list.appendChild(item);
         });
         
-        document.getElementById('flowZoomOut')?.addEventListener('click', () => {
-            this.flowState.zoom /= 1.2;
-            this.renderFlowCanvas(ctx, canvas);
-        });
+        modal.classList.add('show');
+    }
+    
+    addQuestToChain(quest) {
+        this.chainState.nodes.push(JSON.parse(JSON.stringify(quest)));
+        this.renderFlowView();
+    }
+    
+    removeNodeFromChain(index) {
+        // Remove connections involving this node
+        this.chainState.connections = this.chainState.connections.filter(
+            conn => conn.from !== index && conn.to !== index
+        );
         
-        document.getElementById('flowReset')?.addEventListener('click', () => {
-            this.flowState.zoom = 1;
-            this.flowState.offsetX = 0;
-            this.flowState.offsetY = 0;
-            this.renderFlowCanvas(ctx, canvas);
-        });
+        // Adjust connection indices
+        this.chainState.connections = this.chainState.connections.map(conn => ({
+            from: conn.from > index ? conn.from - 1 : conn.from,
+            to: conn.to > index ? conn.to - 1 : conn.to
+        }));
         
-        // Mouse wheel zoom
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-            this.flowState.zoom *= zoomFactor;
-            this.renderFlowCanvas(ctx, canvas);
-        });
+        // Remove node
+        this.chainState.nodes.splice(index, 1);
+        this.renderFlowView();
+    }
+    
+    async saveQuestChain() {
+        try {
+            // Save each quest with updated prerequisites
+            for (const quest of this.chainState.nodes) {
+                const response = await fetch(`/api/quests/${quest.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': this.token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(quest)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to save quest ${quest.id}`);
+                }
+            }
+            
+            alert('Quest chain saved successfully!');
+            await this.loadQuests();
+        } catch (error) {
+            alert('Failed to save quest chain: ' + error.message);
+        }
     }
 }
 

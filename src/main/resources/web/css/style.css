@@ -597,43 +597,68 @@ body {
     gap: 12px;
 }
 
+.flow-instructions {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
 .flow-canvas {
     background: rgba(15, 23, 42, 0.5);
     border: 2px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     position: relative;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 320px);
     box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
-#questFlowCanvas {
+.flow-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    cursor: grab;
+    pointer-events: none;
+    z-index: 1;
 }
 
-#questFlowCanvas:active {
-    cursor: grabbing;
+.flow-nodes {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
 }
 
 .flow-node {
     position: absolute;
-    background: rgba(30, 41, 59, 0.9);
+    background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(10px);
     border: 2px solid var(--primary);
     border-radius: 12px;
     padding: 16px;
-    min-width: 200px;
+    min-width: 220px;
+    max-width: 250px;
     box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
     transition: all 0.3s;
     cursor: move;
+    user-select: none;
 }
 
 .flow-node:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
     border-color: var(--accent-purple);
+    z-index: 100;
+}
+
+.flow-node.dragging {
+    opacity: 0.7;
+    z-index: 1000;
 }
 
 .flow-node-header {
@@ -641,23 +666,106 @@ body {
     color: var(--text-primary);
     margin-bottom: 8px;
     font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.flow-node-content {
-    font-size: 12px;
+.flow-node-remove {
+    background: var(--danger);
+    border: none;
+    color: white;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.flow-node:hover .flow-node-remove {
+    opacity: 1;
+}
+
+.flow-node-id {
+    font-size: 11px;
     color: var(--text-secondary);
+    margin-bottom: 8px;
 }
 
 .flow-node-objectives {
-    margin-top: 8px;
+    font-size: 11px;
+    color: var(--success);
+    margin-bottom: 8px;
+}
+
+.flow-node-connect {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
     padding-top: 8px;
     border-top: 1px solid var(--border);
 }
 
-.flow-node-objective {
-    font-size: 11px;
+.flow-connect-point {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--text-primary);
+    cursor: crosshair;
+    transition: all 0.3s;
+}
+
+.flow-connect-point:hover {
+    background: var(--accent-purple);
+    transform: scale(1.3);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.flow-connect-point.input {
+    background: var(--success);
+}
+
+.flow-connect-point.input:hover {
+    background: #059669;
+}
+
+/* Quest Selector Modal */
+.quest-selector-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.quest-selector-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.quest-selector-item:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.quest-selector-item-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.quest-selector-item-id {
+    font-size: 12px;
     color: var(--text-secondary);
-    padding: 2px 0;
 }
 
 /* Responsive */
