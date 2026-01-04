@@ -540,7 +540,9 @@ For issues, questions, or suggestions:
 
 ## 📜 License
 
-This project is licensed under the MIT License. See LICENSE file for details.
+Copyright (c) 2026 Aethor. All Rights Reserved.
+
+This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited. See the [LICENSE](LICENSE) file for details.
 
 ---
 
