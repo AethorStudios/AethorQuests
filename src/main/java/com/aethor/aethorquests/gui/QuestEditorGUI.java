@@ -82,6 +82,17 @@ public class QuestEditorGUI {
         createNew.setItemMeta(createMeta);
         inv.setItem(49, createNew);
         
+        // Add "Assign Quests" button
+        ItemStack assign = new ItemStack(Material.ENDER_EYE);
+        ItemMeta assignMeta = assign.getItemMeta();
+        assignMeta.displayName(Component.text("Assign/Unassign Quests", NamedTextColor.LIGHT_PURPLE, TextDecoration.BOLD));
+        List<Component> assignLore = new ArrayList<>();
+        assignLore.add(Component.text("Manage which quests", NamedTextColor.GRAY));
+        assignLore.add(Component.text("are assigned to this NPC", NamedTextColor.GRAY));
+        assignMeta.lore(assignLore);
+        assign.setItemMeta(assignMeta);
+        inv.setItem(48, assign);
+        
         // Add "Close" button
         ItemStack close = new ItemStack(Material.BARRIER);
         ItemMeta closeMeta = close.getItemMeta();

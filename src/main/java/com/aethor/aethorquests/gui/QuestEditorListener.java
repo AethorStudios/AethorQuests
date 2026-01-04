@@ -44,13 +44,20 @@ public class QuestEditorListener implements Listener {
         String title = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(titleComponent);
         
         // Check if this is a quest editor inventory
-        if (!title.contains("Quest Editor") && !title.contains("Edit:") && !title.contains("Create New Quest")) {
+        if (!title.contains("Quest Editor") && !title.contains("Edit:") && !title.contains("Create New Quest") && !title.contains("Assign Quests")) {
             return;
         }
         
         // Handle NPC selector menu
         if (title.contains("Select NPC")) {
             handleNpcSelectorClick(player, event.getCurrentItem(), title);
+            event.setCancelled(true);
+            return;
+        }
+        
+        // Handle quest assignment menu
+        if (title.contains("Assign Quests:")) {
+            handleAssignmentClick(player, event.getCurrentItem(), title);
             event.setCancelled(true);
             return;
         }
@@ -87,6 +94,9 @@ public class QuestEditorListener implements Listener {
         if (displayText.contains("Create New Quest")) {
             new QuestCreatorGUI(plugin, player, npcId).open();
         }
+        else if (displayText.contains("Assign/Unassign Quests")) {
+            new QuestAssignmentGUI(plugin, player, npcId).open();
+        }
         else if (displayText.contains("Close")) {
             player.closeInventory();
         }
@@ -103,6 +113,50 @@ public class QuestEditorListener implements Listener {
                         // Edit quest
                         new QuestDetailsEditorGUI(plugin, player, npcId, quest).open();
                     }
+                }
+            }
+        }
+    }
+    
+    private void handleAssignmentClick(Player player, ItemStack clicked, String title) {
+        if (clicked == null || clicked.getType().isAir()) return;
+        
+        Component displayName = clicked.getItemMeta() != null ? clicked.getItemMeta().displayName() : Component.empty();
+        String displayText = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(displayName);
+        
+        String npcId = extractNpcIdFromTitle(title);
+        
+        if (displayText.contains("Back")) {
+            new QuestEditorGUI(plugin, player, npcId).open();
+        }
+        else if (displayText.contains("Close")) {
+            player.closeInventory();
+        }
+        else if (clicked.getType() == org.bukkit.Material.BOOK || clicked.getType() == org.bukkit.Material.ENCHANTED_BOOK) {
+            // Extract quest ID from lore
+            String questId = extractQuestIdFromLore(clicked);
+            if (questId != null) {
+                QuestDefinition quest = plugin.getQuestManager().getQuest(questId);
+                if (quest != null) {
+                    // Toggle assignment
+                    if (quest.getGiverNpcId().equals(npcId)) {
+                        // Unassign: set to empty or "none"
+                        quest.setGiverNpcId("none");
+                        player.sendMessage(Component.text("✓ Quest unassigned from " + npcId, NamedTextColor.YELLOW));
+                    } else {
+                        // Assign to this NPC
+                        quest.setGiverNpcId(npcId);
+                        player.sendMessage(Component.text("✓ Quest assigned to " + npcId, NamedTextColor.GREEN));
+                    }
+                    
+                    // Save changes
+                    fileManager.saveAllQuests();
+                    
+                    // Reload quest manager to reflect changes
+                    plugin.getQuestManager().reload();
+                    
+                    // Reopen GUI to show updated state
+                    new QuestAssignmentGUI(plugin, player, npcId).open();
                 }
             }
         }
