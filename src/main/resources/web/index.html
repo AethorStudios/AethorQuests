@@ -90,41 +90,59 @@
 
         <!-- Quest Editor Modal -->
         <div id="questEditorModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content modal-large">
                 <div class="modal-header">
                     <h3 id="editorTitle">Create Quest</h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form id="questEditorForm">
+                        <h4 style="margin-bottom: 16px; color: #94a3b8;">Basic Information</h4>
                         <div class="form-group">
                             <label>Quest ID*</label>
-                            <input type="text" id="questId" required>
+                            <input type="text" id="questId" required placeholder="my_first_quest">
                         </div>
                         <div class="form-group">
                             <label>Title*</label>
-                            <input type="text" id="questTitle" required>
+                            <input type="text" id="questTitle" required placeholder="My First Quest">
                         </div>
                         <div class="form-group">
                             <label>NPC ID*</label>
-                            <input type="text" id="questNpcId" required>
+                            <input type="text" id="questNpcId" required placeholder="quest_giver_npc">
                         </div>
                         <div class="form-group">
                             <label>Description (one line per row)</label>
-                            <textarea id="questDescription" rows="4"></textarea>
+                            <textarea id="questDescription" rows="3" placeholder="Help the villagers by completing tasks"></textarea>
                         </div>
                         <div class="form-group">
                             <label>Min Level</label>
-                            <input type="number" id="questMinLevel" value="1">
+                            <input type="number" id="questMinLevel" value="1" min="1">
+                        </div>
+
+                        <h4 style="margin: 24px 0 16px; color: #94a3b8;">Objectives</h4>
+                        <div id="objectivesList"></div>
+                        <button type="button" class="btn btn-success" id="addObjectiveBtn" style="margin-top: 12px;">+ Add Objective</button>
+
+                        <h4 style="margin: 24px 0 16px; color: #94a3b8;">Rewards</h4>
+                        <div class="form-group">
+                            <label>Experience Points</label>
+                            <input type="number" id="rewardXp" value="0" min="0" placeholder="100">
                         </div>
                         <div class="form-group">
-                            <label>Objectives (JSON format)</label>
-                            <textarea id="questObjectives" rows="8" placeholder='[{"type":"KILL","targetId":"ZOMBIE","required":10}]'></textarea>
+                            <label>Money</label>
+                            <input type="number" id="rewardMoney" value="0" min="0" step="0.01" placeholder="50.00">
                         </div>
-                        <div class="form-group">
-                            <label>Rewards (JSON format)</label>
-                            <textarea id="questRewards" rows="6" placeholder='{"xp":100,"items":[{"type":"DIAMOND","amount":5}]}'></textarea>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; color: #cbd5e1; font-size: 14px;">Item Rewards</label>
+                            <div id="itemRewardsList"></div>
+                            <button type="button" class="btn btn-success" id="addItemRewardBtn" style="margin-top: 12px;">+ Add Item</button>
                         </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; color: #cbd5e1; font-size: 14px;">Commands (run on completion)</label>
+                            <div id="commandsList"></div>
+                            <button type="button" class="btn btn-success" id="addCommandBtn" style="margin-top: 12px;">+ Add Command</button>
+                        </div>
+
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary modal-close">Cancel</button>
                             <button type="submit" class="btn btn-primary">Save Quest</button>

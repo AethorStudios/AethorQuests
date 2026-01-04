@@ -53,6 +53,11 @@ class AethorQuestsApp {
             this.saveQuest();
         });
         
+        // Dynamic list buttons
+        document.getElementById('addObjectiveBtn').addEventListener('click', () => this.addObjectiveField());
+        document.getElementById('addItemRewardBtn').addEventListener('click', () => this.addItemRewardField());
+        document.getElementById('addCommandBtn').addEventListener('click', () => this.addCommandField());
+        
         // Modal close buttons
         document.querySelectorAll('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => this.closeModal());
@@ -338,12 +343,27 @@ class AethorQuestsApp {
                 document.getElementById('questNpcId').value = quest.giverNpcId;
                 document.getElementById('questDescription').value = quest.description.join('\n');
                 document.getElementById('questMinLevel').value = quest.minLevel || 1;
-                document.getElementById('questObjectives').value = JSON.stringify(quest.objectives, null, 2);
-                document.getElementById('questRewards').value = JSON.stringify(quest.rewards, null, 2);
+                
+                // Clear and populate objectives
+                document.getElementById('objectivesList').innerHTML = '';
+                (quest.objectives || []).forEach(obj => this.addObjectiveField(obj));
+                
+                // Clear and populate rewards
+                document.getElementById('questRewardXp').value = quest.rewards.xp || 0;
+                document.getElementById('questRewardMoney').value = quest.rewards.money || 0;
+                document.getElementById('itemRewardsList').innerHTML = '';
+                (quest.rewards.items || []).forEach(item => this.addItemRewardField(item));
+                document.getElementById('commandsList').innerHTML = '';
+                (quest.rewards.commands || []).forEach(cmd => this.addCommandField(cmd));
             }
         } else {
             document.getElementById('editorTitle').textContent = 'Create Quest';
             document.getElementById('questId').disabled = false;
+            
+            // Clear all dynamic fields
+            document.getElementById('objectivesList').innerHTML = '';
+            document.getElementById('itemRewardsList').innerHTML = '';
+            document.getElementById('commandsList').innerHTML = '';
         }
         
         modal.classList.add('show');
@@ -360,14 +380,56 @@ class AethorQuestsApp {
         const isEdit = this.quests.some(q => q.id === id);
         
         try {
+            // Collect objectives
+            const objectives = [];
+            document.querySelectorAll('#objectivesList .objective-item').forEach(item => {
+                const type = item.querySelector('.obj-type').value;
+                const objective = { type };
+                
+                if (type === 'KILL') {
+                    objective.targetId = item.querySelector('.obj-target').value;
+                    objective.required = parseInt(item.querySelector('.obj-amount').value) || 1;
+                } else if (type === 'TALK') {
+                    objective.targetId = item.querySelector('.obj-target').value;
+                } else if (type === 'COLLECT') {
+                    objective.targetId = item.querySelector('.obj-target').value;
+                    objective.required = parseInt(item.querySelector('.obj-amount').value) || 1;
+                } else if (type === 'VISIT') {
+                    objective.targetId = item.querySelector('.obj-target').value;
+                }
+                
+                objectives.push(objective);
+            });
+            
+            // Collect item rewards
+            const items = [];
+            document.querySelectorAll('#itemRewardsList .item-reward-item').forEach(item => {
+                items.push({
+                    type: item.querySelector('.item-material').value,
+                    amount: parseInt(item.querySelector('.item-amount').value) || 1
+                });
+            });
+            
+            // Collect command rewards
+            const commands = [];
+            document.querySelectorAll('#commandsList .command-item').forEach(item => {
+                const cmd = item.querySelector('.command-input').value.trim();
+                if (cmd) commands.push(cmd);
+            });
+            
             const quest = {
                 id: id,
                 title: document.getElementById('questTitle').value,
                 giverNpcId: document.getElementById('questNpcId').value,
                 description: document.getElementById('questDescription').value.split('\n').filter(l => l.trim()),
                 minLevel: parseInt(document.getElementById('questMinLevel').value) || 1,
-                objectives: JSON.parse(document.getElementById('questObjectives').value || '[]'),
-                rewards: JSON.parse(document.getElementById('questRewards').value || '{}')
+                objectives: objectives,
+                rewards: {
+                    xp: parseInt(document.getElementById('questRewardXp').value) || 0,
+                    money: parseFloat(document.getElementById('questRewardMoney').value) || 0,
+                    items: items,
+                    commands: commands
+                }
             };
             
             const url = isEdit ? `/api/quests/${id}` : '/api/quests';
@@ -412,6 +474,124 @@ class AethorQuestsApp {
         } catch (error) {
             alert('Failed to delete quest');
         }
+    }
+    
+    addObjectiveField(data = null) {
+        const container = document.getElementById('objectivesList');
+        const item = document.createElement('div');
+        item.className = 'objective-item';
+        
+        const type = data?.type || 'KILL';
+        const targetId = data?.targetId || '';
+        const required = data?.required || 1;
+        
+        item.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="form-group">
+                <label>Type</label>
+                <select class="obj-type" onchange="app.updateObjectiveFields(this)">
+                    <option value="KILL" ${type === 'KILL' ? 'selected' : ''}>Kill Mobs</option>
+                    <option value="TALK" ${type === 'TALK' ? 'selected' : ''}>Talk to NPC</option>
+                    <option value="COLLECT" ${type === 'COLLECT' ? 'selected' : ''}>Collect Items</option>
+                    <option value="VISIT" ${type === 'VISIT' ? 'selected' : ''}>Visit Location</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="target-label">Target</label>
+                    <input type="text" class="obj-target" value="${targetId}" placeholder="e.g., ZOMBIE, npc_123, DIAMOND">
+                </div>
+                <div class="form-group amount-group" style="display: ${type === 'KILL' || type === 'COLLECT' ? 'block' : 'none'}">
+                    <label>Amount</label>
+                    <input type="number" class="obj-amount" value="${required}" min="1">
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(item);
+        this.updateObjectiveLabels(item.querySelector('.obj-type'));
+    }
+    
+    updateObjectiveFields(select) {
+        const item = select.closest('.objective-item');
+        const type = select.value;
+        const amountGroup = item.querySelector('.amount-group');
+        
+        // Show/hide amount field based on type
+        if (type === 'KILL' || type === 'COLLECT') {
+            amountGroup.style.display = 'block';
+        } else {
+            amountGroup.style.display = 'none';
+        }
+        
+        this.updateObjectiveLabels(select);
+    }
+    
+    updateObjectiveLabels(select) {
+        const item = select.closest('.objective-item');
+        const type = select.value;
+        const targetLabel = item.querySelector('.target-label');
+        const targetInput = item.querySelector('.obj-target');
+        
+        switch(type) {
+            case 'KILL':
+                targetLabel.textContent = 'Mob Type';
+                targetInput.placeholder = 'e.g., ZOMBIE, SKELETON, CREEPER';
+                break;
+            case 'TALK':
+                targetLabel.textContent = 'NPC ID';
+                targetInput.placeholder = 'e.g., npc_merchant, npc_guard';
+                break;
+            case 'COLLECT':
+                targetLabel.textContent = 'Item Material';
+                targetInput.placeholder = 'e.g., DIAMOND, IRON_INGOT, WHEAT';
+                break;
+            case 'VISIT':
+                targetLabel.textContent = 'Location ID';
+                targetInput.placeholder = 'e.g., castle, village_center';
+                break;
+        }
+    }
+    
+    addItemRewardField(data = null) {
+        const container = document.getElementById('itemRewardsList');
+        const item = document.createElement('div');
+        item.className = 'item-reward-item';
+        
+        const material = data?.type || '';
+        const amount = data?.amount || 1;
+        
+        item.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Material</label>
+                    <input type="text" class="item-material" value="${material}" placeholder="e.g., DIAMOND, IRON_SWORD">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" class="item-amount" value="${amount}" min="1">
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    }
+    
+    addCommandField(command = '') {
+        const container = document.getElementById('commandsList');
+        const item = document.createElement('div');
+        item.className = 'command-item';
+        
+        item.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="form-group">
+                <label>Command</label>
+                <input type="text" class="command-input" value="${command}" placeholder="e.g., give {player} diamond 5">
+            </div>
+        `;
+        
+        container.appendChild(item);
     }
 }
 
