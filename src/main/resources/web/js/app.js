@@ -400,6 +400,7 @@ class AethorQuestsApp {
     async saveQuest() {
         const id = document.getElementById('questId').value;
         const isEdit = this.quests.some(q => q.id === id);
+        const existingQuest = this.quests.find(q => q.id === id);
         
         try {
             // Collect objectives
@@ -456,7 +457,10 @@ class AethorQuestsApp {
                 title: document.getElementById('questTitle').value,
                 giverNpcId: document.getElementById('questNpcId').value,
                 description: document.getElementById('questDescription').value.split('\n').filter(l => l.trim()),
-                minLevel: parseInt(document.getElementById('questMinLevel').value) || 1,
+                requirements: {
+                    minLevel: parseInt(document.getElementById('questMinLevel').value) || 1,
+                    requiredQuestsCompleted: existingQuest?.requirements?.requiredQuestsCompleted || []
+                },
                 objectives: objectives,
                 rewards: {
                     xp: parseInt(document.getElementById('rewardXp').value) || 0,
