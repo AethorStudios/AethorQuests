@@ -389,18 +389,30 @@ class AethorQuestsApp {
             const objectives = [];
             document.querySelectorAll('#objectivesList .objective-item').forEach(item => {
                 const type = item.querySelector('.obj-type').value;
-                const objective = { type };
+                const targetValue = item.querySelector('.obj-target').value;
+                const amountValue = parseInt(item.querySelector('.obj-amount').value) || 1;
+                
+                const objective = { type, description: '' };
                 
                 if (type === 'KILL') {
-                    objective.targetId = item.querySelector('.obj-target').value;
-                    objective.required = parseInt(item.querySelector('.obj-amount').value) || 1;
+                    // Check if it's a MythicMob (contains lowercase) or EntityType (uppercase)
+                    if (targetValue.toUpperCase() === targetValue) {
+                        objective.entityType = targetValue;
+                    } else {
+                        objective.mythicMobName = targetValue;
+                    }
+                    objective.killAmount = amountValue;
                 } else if (type === 'TALK') {
-                    objective.targetId = item.querySelector('.obj-target').value;
+                    objective.talkNpcId = targetValue;
                 } else if (type === 'COLLECT') {
-                    objective.targetId = item.querySelector('.obj-target').value;
-                    objective.required = parseInt(item.querySelector('.obj-amount').value) || 1;
+                    objective.collectMaterial = targetValue;
+                    objective.collectAmount = amountValue;
                 } else if (type === 'VISIT') {
-                    objective.targetId = item.querySelector('.obj-target').value;
+                    objective.visitWorld = targetValue;
+                    objective.visitX = 0;
+                    objective.visitY = 0;
+                    objective.visitZ = 0;
+                    objective.visitRadius = 5;
                 }
                 
                 objectives.push(objective);
@@ -487,8 +499,24 @@ class AethorQuestsApp {
         item.className = 'objective-item';
         
         const type = data?.type || 'KILL';
-        const targetId = data?.targetId || '';
-        const required = data?.required || 1;
+        
+        // Map Java property names to display values
+        let targetId = '';
+        let required = 1;
+        
+        if (data) {
+            if (type === 'KILL') {
+                targetId = data.mythicMobName || data.entityType || '';
+                required = data.killAmount || 1;
+            } else if (type === 'TALK') {
+                targetId = data.talkNpcId || '';
+            } else if (type === 'COLLECT') {
+                targetId = data.collectMaterial || '';
+                required = data.collectAmount || 1;
+            } else if (type === 'VISIT') {
+                targetId = data.visitWorld || '';
+            }
+        }
         
         item.innerHTML = `
             <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
