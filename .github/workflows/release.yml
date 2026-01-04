@@ -30,14 +30,19 @@ jobs:
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
+    - name: Find JAR file
+      id: find_jar
+      run: |
+        JAR_FILE=$(find target -name "*.jar" -not -name "*-original.jar" | head -n 1)
+        echo "jar_file=$JAR_FILE" >> $GITHUB_OUTPUT
+        echo "Found JAR: $JAR_FILE"
+      
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: AethorQuests v${{ steps.get_version.outputs.VERSION }}
+        name: AethorQuests v${{ steps.get_version.outputs.VERSION }}
         body: |
           ## AethorQuests v${{ steps.get_version.outputs.VERSION }}
           
@@ -56,13 +61,5 @@ jobs:
           - AethorNPCS plugin
         draft: false
         prerelease: false
-        
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./target/AethorQuests-1.0.0-SNAPSHOT.jar
-        asset_name: AethorQuests-${{ steps.get_version.outputs.VERSION }}.jar
-        asset_content_type: application/java-archive
+        files: |
+          ${{ steps.find_jar.outputs.jar_file }}
