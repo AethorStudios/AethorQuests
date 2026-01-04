@@ -352,7 +352,7 @@ class AethorQuestsApp {
                 document.getElementById('questTitle').value = quest.title;
                 document.getElementById('questNpcId').value = quest.giverNpcId;
                 document.getElementById('questDescription').value = quest.description.join('\n');
-                document.getElementById('questMinLevel').value = quest.minLevel || 1;
+                document.getElementById('questMinLevel').value = quest.requirements?.minLevel || 1;
                 
                 // Populate objectives
                 console.log('About to add', (quest.objectives || []).length, 'objectives');
