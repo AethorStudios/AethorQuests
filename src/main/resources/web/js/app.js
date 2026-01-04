@@ -331,7 +331,11 @@ class AethorQuestsApp {
     openQuestEditor(questId = null) {
         const modal = document.getElementById('questEditorModal');
         const form = document.getElementById('questEditorForm');
-        form.reset();
+        
+        // Clear dynamic fields first
+        document.getElementById('objectivesList').innerHTML = '';
+        document.getElementById('itemRewardsList').innerHTML = '';
+        document.getElementById('commandsList').innerHTML = '';
         
         if (questId) {
             const quest = this.quests.find(q => q.id === questId);
@@ -344,26 +348,19 @@ class AethorQuestsApp {
                 document.getElementById('questDescription').value = quest.description.join('\n');
                 document.getElementById('questMinLevel').value = quest.minLevel || 1;
                 
-                // Clear and populate objectives
-                document.getElementById('objectivesList').innerHTML = '';
+                // Populate objectives
                 (quest.objectives || []).forEach(obj => this.addObjectiveField(obj));
                 
-                // Clear and populate rewards
+                // Populate rewards
                 document.getElementById('questRewardXp').value = quest.rewards.xp || 0;
                 document.getElementById('questRewardMoney').value = quest.rewards.money || 0;
-                document.getElementById('itemRewardsList').innerHTML = '';
                 (quest.rewards.items || []).forEach(item => this.addItemRewardField(item));
-                document.getElementById('commandsList').innerHTML = '';
                 (quest.rewards.commands || []).forEach(cmd => this.addCommandField(cmd));
             }
         } else {
+            form.reset();
             document.getElementById('editorTitle').textContent = 'Create Quest';
             document.getElementById('questId').disabled = false;
-            
-            // Clear all dynamic fields
-            document.getElementById('objectivesList').innerHTML = '';
-            document.getElementById('itemRewardsList').innerHTML = '';
-            document.getElementById('commandsList').innerHTML = '';
         }
         
         modal.classList.add('show');
