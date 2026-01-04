@@ -296,9 +296,14 @@ public class QuestEditorListener implements Listener {
     }
     
     private String extractNpcIdFromTitle(String title) {
-        // Extract NPC ID from title like "Quest Editor: my_npc"
+        // Extract NPC ID from title like "Quest Editor: my_npc" or "Assign Quests: my_npc"
         if (title.contains("Quest Editor:")) {
             String[] parts = title.split("Quest Editor:");
+            if (parts.length > 1) {
+                return parts[1].trim();
+            }
+        } else if (title.contains("Assign Quests:")) {
+            String[] parts = title.split("Assign Quests:");
             if (parts.length > 1) {
                 return parts[1].trim();
             }
