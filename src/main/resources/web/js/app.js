@@ -475,6 +475,10 @@ class AethorQuestsApp {
                 }
             };
             
+            console.log('Saving quest:', quest);
+            console.log('Quest ID:', id);
+            console.log('URL:', isEdit ? `/api/quests/${id}` : '/api/quests');
+            
             const url = isEdit ? `/api/quests/${id}` : '/api/quests';
             const method = isEdit ? 'PUT' : 'POST';
             
