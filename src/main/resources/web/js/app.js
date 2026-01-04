@@ -340,6 +340,10 @@ class AethorQuestsApp {
         if (questId) {
             const quest = this.quests.find(q => q.id === questId);
             if (quest) {
+                console.log('Editing quest:', quest);
+                console.log('Quest objectives:', quest.objectives);
+                console.log('Quest rewards:', quest.rewards);
+                
                 document.getElementById('editorTitle').textContent = 'Edit Quest';
                 document.getElementById('questId').value = quest.id;
                 document.getElementById('questId').disabled = true;
@@ -349,7 +353,11 @@ class AethorQuestsApp {
                 document.getElementById('questMinLevel').value = quest.minLevel || 1;
                 
                 // Populate objectives
-                (quest.objectives || []).forEach(obj => this.addObjectiveField(obj));
+                console.log('About to add', (quest.objectives || []).length, 'objectives');
+                (quest.objectives || []).forEach((obj, idx) => {
+                    console.log(`Adding objective ${idx}:`, obj);
+                    this.addObjectiveField(obj);
+                });
                 
                 // Populate rewards
                 document.getElementById('rewardXp').value = quest.rewards?.xp || 0;
