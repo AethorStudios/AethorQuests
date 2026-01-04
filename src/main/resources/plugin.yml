@@ -28,6 +28,10 @@ permissions:
     default: op
     children:
       aethorquests.admin.edit: true
+      aethorquests.admin.webpanel: true
   aethorquests.admin.edit:
     description: Allows editing quests via GUI with shift+right-click
+    default: op
+  aethorquests.admin.webpanel:
+    description: Allows access to the web management panel
     default: op

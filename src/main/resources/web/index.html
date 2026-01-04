@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AethorQuests - Web Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen">
+            <div class="login-container">
+                <div class="logo">
+                    <h1>AethorQuests</h1>
+                    <p>Quest Management Panel</p>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <input type="text" id="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" placeholder="Password (optional)" autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                    <div id="loginError" class="error-message"></div>
+                </form>
+                <div class="login-info">
+                    <p>⚠️ You must be logged in to the Minecraft server with admin permissions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboard" class="screen" style="display: none;">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <h2>AethorQuests</h2>
+                </div>
+                <div class="nav-menu">
+                    <button class="nav-item active" data-view="quests">Quests</button>
+                    <button class="nav-item" data-view="npcs">NPCs</button>
+                    <button class="nav-item" data-view="assignment">Assignment</button>
+                </div>
+                <div class="nav-user">
+                    <span id="username-display"></span>
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </div>
+            </nav>
+
+            <div class="container">
+                <!-- Quests View -->
+                <div id="questsView" class="view active">
+                    <div class="view-header">
+                        <h2>Quest Management</h2>
+                        <button id="createQuestBtn" class="btn btn-success">+ Create Quest</button>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" id="questSearch" placeholder="Search quests...">
+                    </div>
+                    <div id="questsList" class="list-container"></div>
+                </div>
+
+                <!-- NPCs View -->
+                <div id="npcsView" class="view">
+                    <div class="view-header">
+                        <h2>NPC Overview</h2>
+                    </div>
+                    <div id="npcsList" class="list-container"></div>
+                </div>
+
+                <!-- Assignment View -->
+                <div id="assignmentView" class="view">
+                    <div class="view-header">
+                        <h2>Quest Assignment</h2>
+                    </div>
+                    <div class="assignment-grid">
+                        <div class="assignment-column">
+                            <h3>NPCs</h3>
+                            <div id="assignmentNpcsList"></div>
+                        </div>
+                        <div class="assignment-column">
+                            <h3>Quests for: <span id="selectedNpcName">Select an NPC</span></h3>
+                            <div id="assignmentQuestsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quest Editor Modal -->
+        <div id="questEditorModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="editorTitle">Create Quest</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="questEditorForm">
+                        <div class="form-group">
+                            <label>Quest ID*</label>
+                            <input type="text" id="questId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Title*</label>
+                            <input type="text" id="questTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>NPC ID*</label>
+                            <input type="text" id="questNpcId" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description (one line per row)</label>
+                            <textarea id="questDescription" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Min Level</label>
+                            <input type="number" id="questMinLevel" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Objectives (JSON format)</label>
+                            <textarea id="questObjectives" rows="8" placeholder='[{"type":"KILL","targetId":"ZOMBIE","required":10}]'></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Rewards (JSON format)</label>
+                            <textarea id="questRewards" rows="6" placeholder='{"xp":100,"items":[{"type":"DIAMOND","amount":5}]}'></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Quest</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

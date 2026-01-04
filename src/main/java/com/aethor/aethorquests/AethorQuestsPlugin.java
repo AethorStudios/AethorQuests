@@ -14,6 +14,7 @@ import com.aethor.aethorquests.tracker.KillObjectiveTracker;
 import com.aethor.aethorquests.tracker.TalkObjectiveTracker;
 import com.aethor.aethorquests.tracker.VisitObjectiveTracker;
 import com.aethor.aethorquests.ui.QuestUI;
+import com.aethor.aethorquests.web.WebServer;
 
 /**
  * Main plugin class for AethorQuests
@@ -27,6 +28,9 @@ public class AethorQuestsPlugin extends JavaPlugin {
     
     // UI
     private QuestUI questUI;
+    
+    // Web Server
+    private WebServer webServer;
     
     // Hook
     private AethorNpcHook npcHook;
@@ -77,12 +81,25 @@ public class AethorQuestsPlugin extends JavaPlugin {
             playerDataStore.loadPlayerData(player.getUniqueId());
         }
         
+        // Start web server if enabled
+        if (getConfig().getBoolean("webPanel.enabled", true)) {
+            String host = getConfig().getString("webPanel.host", "0.0.0.0");
+            int port = getConfig().getInt("webPanel.port", 8080);
+            webServer = new WebServer(this, host, port);
+            webServer.start();
+        }
+        
         getLogger().info("AethorQuests v" + getDescription().getVersion() + " enabled!");
         getLogger().info("Loaded " + questManager.getAllQuests().size() + " quest(s)");
     }
     
     @Override
     public void onDisable() {
+        // Stop web server
+        if (webServer != null) {
+            webServer.stop();
+        }
+        
         // Cancel all tasks
         if (visitTracker != null) {
             visitTracker.cancel();

@@ -1,6 +1,15 @@
 # AethorQuests Configuration
 # Production-quality quest system for Paper Minecraft 1.21.8
 
+# Web Panel Settings
+webPanel:
+  # Enable the web management interface
+  enabled: true
+  # Host to bind to (0.0.0.0 for all interfaces, localhost for local only)
+  host: "0.0.0.0"
+  # Port to run the web server on
+  port: 8080
+
 # UI mode for quest interactions
 # Options: CHAT (Adventure text components)
 uiMode: CHAT
