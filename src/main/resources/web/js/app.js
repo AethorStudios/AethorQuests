@@ -352,8 +352,8 @@ class AethorQuestsApp {
                 (quest.objectives || []).forEach(obj => this.addObjectiveField(obj));
                 
                 // Populate rewards
-                document.getElementById('questRewardXp').value = quest.rewards.xp || 0;
-                document.getElementById('questRewardMoney').value = quest.rewards.money || 0;
+                document.getElementById('rewardXp').value = quest.rewards?.xp || 0;
+                document.getElementById('rewardMoney').value = quest.rewards?.money || 0;
                 (quest.rewards.items || []).forEach(item => this.addItemRewardField(item));
                 (quest.rewards.commands || []).forEach(cmd => this.addCommandField(cmd));
             }
@@ -422,8 +422,8 @@ class AethorQuestsApp {
                 minLevel: parseInt(document.getElementById('questMinLevel').value) || 1,
                 objectives: objectives,
                 rewards: {
-                    xp: parseInt(document.getElementById('questRewardXp').value) || 0,
-                    money: parseFloat(document.getElementById('questRewardMoney').value) || 0,
+                    xp: parseInt(document.getElementById('rewardXp').value) || 0,
+                    money: parseFloat(document.getElementById('rewardMoney').value) || 0,
                     items: items,
                     commands: commands
                 }
