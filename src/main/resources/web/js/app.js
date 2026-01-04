@@ -156,6 +156,8 @@ class AethorQuestsApp {
         // Load data for specific views
         if (viewName === 'assignment') {
             this.loadAssignmentView();
+        } else if (viewName === 'flow') {
+            this.initFlowView();
         }
     }
     
@@ -625,6 +627,246 @@ class AethorQuestsApp {
         `;
         
         container.appendChild(item);
+    }
+    
+    initFlowView() {
+        const canvas = document.getElementById('questFlowCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        const container = document.getElementById('flowCanvas');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        // Flow state
+        if (!this.flowState) {
+            this.flowState = {
+                zoom: 1,
+                offsetX: 0,
+                offsetY: 0,
+                dragging: false,
+                dragStart: { x: 0, y: 0 }
+            };
+        }
+        
+        this.renderFlowCanvas(ctx, canvas);
+        this.setupFlowControls(canvas, ctx);
+    }
+    
+    renderFlowCanvas(ctx, canvas) {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Apply zoom and pan
+        ctx.save();
+        ctx.translate(this.flowState.offsetX, this.flowState.offsetY);
+        ctx.scale(this.flowState.zoom, this.flowState.zoom);
+        
+        // Draw grid
+        this.drawGrid(ctx, canvas);
+        
+        // Calculate positions for each quest
+        const positions = this.calculateQuestPositions();
+        
+        // Draw connections first (behind nodes)
+        this.drawConnections(ctx, positions);
+        
+        // Draw quest nodes
+        this.drawQuestNodes(ctx, positions);
+        
+        ctx.restore();
+    }
+    
+    drawGrid(ctx, canvas) {
+        const gridSize = 50;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 1;
+        
+        for (let x = 0; x < canvas.width / this.flowState.zoom; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height / this.flowState.zoom);
+            ctx.stroke();
+        }
+        
+        for (let y = 0; y < canvas.height / this.flowState.zoom; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width / this.flowState.zoom, y);
+            ctx.stroke();
+        }
+    }
+    
+    calculateQuestPositions() {
+        const positions = {};
+        const spacing = 300;
+        const startX = 100;
+        const startY = 100;
+        
+        // Group quests by NPC
+        const npcGroups = {};
+        this.quests.forEach(quest => {
+            if (!npcGroups[quest.giverNpcId]) {
+                npcGroups[quest.giverNpcId] = [];
+            }
+            npcGroups[quest.giverNpcId].push(quest);
+        });
+        
+        // Position quests in columns by NPC
+        let columnIndex = 0;
+        Object.entries(npcGroups).forEach(([npcId, quests]) => {
+            quests.forEach((quest, index) => {
+                positions[quest.id] = {
+                    x: startX + (columnIndex * spacing),
+                    y: startY + (index * 150),
+                    quest: quest
+                };
+            });
+            columnIndex++;
+        });
+        
+        return positions;
+    }
+    
+    drawConnections(ctx, positions) {
+        // Draw lines between connected quests
+        Object.values(positions).forEach(pos1 => {
+            Object.values(positions).forEach(pos2 => {
+                if (pos1.quest.giverNpcId === pos2.quest.giverNpcId && pos1 !== pos2) {
+                    ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(pos1.x + 100, pos1.y + 50);
+                    ctx.lineTo(pos2.x + 100, pos2.y + 50);
+                    ctx.stroke();
+                }
+            });
+        });
+    }
+    
+    drawQuestNodes(ctx, positions) {
+        Object.values(positions).forEach(pos => {
+            const x = pos.x;
+            const y = pos.y;
+            const width = 200;
+            const height = 100;
+            
+            // Node background with gradient
+            const gradient = ctx.createLinearGradient(x, y, x, y + height);
+            gradient.addColorStop(0, 'rgba(30, 41, 59, 0.95)');
+            gradient.addColorStop(1, 'rgba(51, 65, 85, 0.95)');
+            
+            ctx.fillStyle = gradient;
+            ctx.strokeStyle = '#6366f1';
+            ctx.lineWidth = 2;
+            
+            // Draw rounded rectangle
+            this.roundRect(ctx, x, y, width, height, 12);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw title
+            ctx.fillStyle = '#f1f5f9';
+            ctx.font = 'bold 14px Segoe UI';
+            ctx.fillText(this.truncateText(ctx, pos.quest.title, width - 20), x + 10, y + 25);
+            
+            // Draw ID
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px Segoe UI';
+            ctx.fillText(pos.quest.id, x + 10, y + 45);
+            
+            // Draw objective count
+            const objCount = pos.quest.objectives?.length || 0;
+            ctx.fillStyle = '#10b981';
+            ctx.fillText(`${objCount} objective${objCount !== 1 ? 's' : ''}`, x + 10, y + 65);
+            
+            // Draw NPC badge
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
+            this.roundRect(ctx, x + 10, y + 75, width - 20, 18, 6);
+            ctx.fill();
+            ctx.fillStyle = '#6366f1';
+            ctx.font = '10px Segoe UI';
+            ctx.fillText(`NPC: ${pos.quest.giverNpcId}`, x + 15, y + 87);
+        });
+    }
+    
+    roundRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+    
+    truncateText(ctx, text, maxWidth) {
+        if (ctx.measureText(text).width <= maxWidth) {
+            return text;
+        }
+        
+        let truncated = text;
+        while (ctx.measureText(truncated + '...').width > maxWidth && truncated.length > 0) {
+            truncated = truncated.slice(0, -1);
+        }
+        return truncated + '...';
+    }
+    
+    setupFlowControls(canvas, ctx) {
+        // Pan with mouse drag
+        canvas.addEventListener('mousedown', (e) => {
+            this.flowState.dragging = true;
+            this.flowState.dragStart = { x: e.clientX, y: e.clientY };
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (this.flowState.dragging) {
+                const dx = e.clientX - this.flowState.dragStart.x;
+                const dy = e.clientY - this.flowState.dragStart.y;
+                this.flowState.offsetX += dx;
+                this.flowState.offsetY += dy;
+                this.flowState.dragStart = { x: e.clientX, y: e.clientY };
+                this.renderFlowCanvas(ctx, canvas);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            this.flowState.dragging = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            this.flowState.dragging = false;
+        });
+        
+        // Zoom controls
+        document.getElementById('flowZoomIn')?.addEventListener('click', () => {
+            this.flowState.zoom *= 1.2;
+            this.renderFlowCanvas(ctx, canvas);
+        });
+        
+        document.getElementById('flowZoomOut')?.addEventListener('click', () => {
+            this.flowState.zoom /= 1.2;
+            this.renderFlowCanvas(ctx, canvas);
+        });
+        
+        document.getElementById('flowReset')?.addEventListener('click', () => {
+            this.flowState.zoom = 1;
+            this.flowState.offsetX = 0;
+            this.flowState.offsetY = 0;
+            this.renderFlowCanvas(ctx, canvas);
+        });
+        
+        // Mouse wheel zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            this.flowState.zoom *= zoomFactor;
+            this.renderFlowCanvas(ctx, canvas);
+        });
     }
 }
 

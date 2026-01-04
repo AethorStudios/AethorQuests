@@ -38,9 +38,10 @@
                     <h2>AethorQuests</h2>
                 </div>
                 <div class="nav-menu">
-                    <button class="nav-item active" data-view="quests">Quests</button>
-                    <button class="nav-item" data-view="npcs">NPCs</button>
-                    <button class="nav-item" data-view="assignment">Assignment</button>
+                    <button class="nav-item active" data-view="quests">📋 Quests</button>
+                    <button class="nav-item" data-view="flow">🔗 Quest Flow</button>
+                    <button class="nav-item" data-view="npcs">👤 NPCs</button>
+                    <button class="nav-item" data-view="assignment">⚙️ Assignment</button>
                 </div>
                 <div class="nav-user">
                     <span id="username-display"></span>
@@ -59,6 +60,21 @@
                         <input type="text" id="questSearch" placeholder="Search quests...">
                     </div>
                     <div id="questsList" class="list-container"></div>
+                </div>
+
+                <!-- Quest Flow View -->
+                <div id="flowView" class="view">
+                    <div class="view-header">
+                        <h2>Quest Flow Visualizer</h2>
+                        <div class="flow-controls">
+                            <button id="flowZoomIn" class="btn btn-secondary">🔍 Zoom In</button>
+                            <button id="flowZoomOut" class="btn btn-secondary">🔍 Zoom Out</button>
+                            <button id="flowReset" class="btn btn-secondary">↺ Reset View</button>
+                        </div>
+                    </div>
+                    <div id="flowCanvas" class="flow-canvas">
+                        <canvas id="questFlowCanvas"></canvas>
+                    </div>
                 </div>
 
                 <!-- NPCs View -->
