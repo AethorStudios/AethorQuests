@@ -1,0 +1,33 @@
+# AethorQuests Configuration
+# Production-quality quest system for Paper Minecraft 1.21.8
+
+# UI mode for quest interactions
+# Options: CHAT (Adventure text components)
+uiMode: CHAT
+
+# Enable debug logging
+debug: false
+
+# Require players to turn in quests at the giver NPC
+turnInRequiresGiverNpc: true
+
+# Visit objective checking settings
+visitCheck:
+  # How often to check player positions (in ticks, 20 ticks = 1 second)
+  periodTicks: 10
+  # Default radius for visit objectives if not specified
+  radiusDefault: 5.0
+
+# Quest tracking settings
+tracking:
+  # Show action bar updates for active quest progress
+  showActionBar: true
+  # Action bar update interval (in ticks)
+  actionBarUpdateTicks: 40
+
+# Storage settings
+storage:
+  # Save player data periodically
+  autoSaveTicks: 6000  # 5 minutes
+  # Save on quit
+  saveOnQuit: true

@@ -1,0 +1,125 @@
+# AethorQuests - Quest Definitions
+# Define all quests here. Quest IDs must be unique.
+
+quests:
+  # Example Quest 1: Simple kill quest
+  slime_hunter:
+    id: slime_hunter
+    title: "Slime Hunter"
+    description:
+      - "&7The village elder needs help dealing"
+      - "&7with the slime infestation in the swamp."
+      - "&7Hunt down 10 slimes and report back."
+    giverNpcId: "village_elder"  # Must match AethorNPCS NPC ID
+    requirements:
+      minLevel: 1
+      requiredQuestsCompleted: []
+    objectives:
+      - type: KILL
+        target: SLIME
+        amount: 10
+        description: "Kill slimes"
+      - type: TALK
+        target: "village_elder"
+        description: "Return to the village elder"
+    rewards:
+      xp: 100
+      money: 50.0
+      commands:
+        - "give {player} diamond 2"
+      items: []
+
+  # Example Quest 2: Collection quest
+  gather_resources:
+    id: gather_resources
+    title: "Gather Resources"
+    description:
+      - "&7The blacksmith needs materials to"
+      - "&7craft new equipment for the guards."
+      - "&7Collect iron and coal from the mines."
+    giverNpcId: "blacksmith"
+    requirements:
+      minLevel: 5
+      requiredQuestsCompleted: []
+    objectives:
+      - type: COLLECT
+        target: IRON_INGOT
+        amount: 16
+        description: "Collect iron ingots"
+      - type: COLLECT
+        target: COAL
+        amount: 32
+        description: "Collect coal"
+      - type: TALK
+        target: "blacksmith"
+        description: "Return to the blacksmith"
+    rewards:
+      xp: 200
+      money: 100.0
+      commands:
+        - "give {player} iron_sword 1"
+        - "give {player} iron_helmet 1"
+      items: []
+
+  # Example Quest 3: Visit location quest
+  explore_ruins:
+    id: explore_ruins
+    title: "Explore the Ancient Ruins"
+    description:
+      - "&7An archaeologist has discovered ancient"
+      - "&7ruins to the north. Visit the location"
+      - "&7and report your findings."
+    giverNpcId: "archaeologist"
+    requirements:
+      minLevel: 10
+      requiredQuestsCompleted: ["gather_resources"]
+    objectives:
+      - type: VISIT
+        world: "world"
+        x: 100
+        y: 64
+        z: 200
+        radius: 10.0
+        description: "Visit the ancient ruins"
+      - type: TALK
+        target: "archaeologist"
+        description: "Report back to the archaeologist"
+    rewards:
+      xp: 500
+      money: 250.0
+      commands:
+        - "give {player} enchanted_book 1"
+      items: []
+
+  # Example Quest 4: Multi-stage quest with MythicMobs support
+  defeat_boss:
+    id: defeat_boss
+    title: "Defeat the Corrupted Guardian"
+    description:
+      - "&c&lDANGEROUS QUEST"
+      - "&7A powerful corrupted guardian has been"
+      - "&7terrorizing the kingdom. Gather a party"
+      - "&7and defeat this menace."
+    giverNpcId: "knight_captain"
+    requirements:
+      minLevel: 20
+      requiredQuestsCompleted: ["slime_hunter", "gather_resources", "explore_ruins"]
+    objectives:
+      - type: TALK
+        target: "priest"
+        description: "Speak with the priest for a blessing"
+      - type: KILL
+        target: "CorruptedGuardian"  # MythicMobs mob internal name
+        amount: 1
+        description: "Defeat the Corrupted Guardian"
+      - type: TALK
+        target: "knight_captain"
+        description: "Report victory to the captain"
+    rewards:
+      xp: 2000
+      money: 1000.0
+      commands:
+        - "give {player} diamond_sword 1"
+        - "give {player} diamond_chestplate 1"
+        - "broadcast &6{player} has defeated the Corrupted Guardian!"
+      items: []

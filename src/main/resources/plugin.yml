@@ -1,0 +1,33 @@
+name: AethorQuests
+version: '${project.version}'
+main: com.aethor.aethorquests.AethorQuestsPlugin
+api-version: '1.21'
+softdepend: [AethorNPCS]
+author: Aethor
+description: Production-quality quest system integrated with AethorNPCS
+
+commands:
+  quest:
+    description: Main quest command for players
+    usage: /<command> [journal|track|abandon|reload]
+    aliases: [q, quests]
+    permission: aethorquests.use
+
+  questadmin:
+    description: Quest administration commands
+    usage: /<command> [reload|give|complete] [player] [questId]
+    aliases: [qa, questsadmin]
+    permission: aethorquests.admin
+
+permissions:
+  aethorquests.use:
+    description: Allows players to use quest commands
+    default: true
+  aethorquests.admin:
+    description: Allows access to admin quest commands
+    default: op
+    children:
+      aethorquests.admin.edit: true
+  aethorquests.admin.edit:
+    description: Allows editing quests via GUI with shift+right-click
+    default: op
