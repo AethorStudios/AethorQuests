@@ -261,8 +261,8 @@ public class MarkerHologramController {
                 return;
             }
             
-            // Set the text on the first line
-            DHAPI.setHologramLine(hologram, 0, text);
+            // Add the text line (creates line 0)
+            DHAPI.addHologramLine(hologram, text);
             
             // Make it only visible to this player (hide from everyone, then show to specific player)
             hologram.setDefaultVisibleState(false);
@@ -289,9 +289,15 @@ public class MarkerHologramController {
                 return;
             }
             
-            // Update position and text
+            // Update position
             DHAPI.moveHologram(hologram, location);
-            DHAPI.setHologramLine(hologram, 0, text);
+            
+            // Update text (ensure line exists)
+            if (hologram.getPage(0).getLines().size() > 0) {
+                DHAPI.setHologramLine(hologram, 0, text);
+            } else {
+                DHAPI.addHologramLine(hologram, text);
+            }
             
             if (plugin.isDebug()) {
                 plugin.getLogger().info("Updated marker hologram '" + name + "'");
