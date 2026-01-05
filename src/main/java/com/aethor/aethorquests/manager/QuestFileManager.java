@@ -188,9 +188,9 @@ public class QuestFileManager {
             
             // Dialogue
             if (quest.getDialogue() != null) {
-                config.set(path + ".dialogue.accept", quest.getDialogue().getAcceptDialogue());
-                config.set(path + ".dialogue.progress", quest.getDialogue().getProgressDialogue());
-                config.set(path + ".dialogue.completion", quest.getDialogue().getCompletionDialogue());
+                config.set(path + ".dialogue.acceptDialogue", quest.getDialogue().getAcceptDialogue());
+                config.set(path + ".dialogue.progressDialogue", quest.getDialogue().getProgressDialogue());
+                config.set(path + ".dialogue.completionDialogue", quest.getDialogue().getCompletionDialogue());
             }
         }
         

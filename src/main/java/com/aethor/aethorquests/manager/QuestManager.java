@@ -138,9 +138,9 @@ public class QuestManager {
         ConfigurationSection dialogueSection = section.getConfigurationSection("dialogue");
         if (dialogueSection != null) {
             Dialogue dialogue = new Dialogue();
-            dialogue.setAcceptDialogue(dialogueSection.getStringList("accept"));
-            dialogue.setProgressDialogue(dialogueSection.getStringList("progress"));
-            dialogue.setCompletionDialogue(dialogueSection.getStringList("completion"));
+            dialogue.setAcceptDialogue(dialogueSection.getStringList("acceptDialogue"));
+            dialogue.setProgressDialogue(dialogueSection.getStringList("progressDialogue"));
+            dialogue.setCompletionDialogue(dialogueSection.getStringList("completionDialogue"));
             quest.setDialogue(dialogue);
         }
         
