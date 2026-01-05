@@ -12,6 +12,9 @@ import com.aethor.aethorquests.listener.PlayerListener;
 import com.aethor.aethorquests.manager.DialogueManager;
 import com.aethor.aethorquests.manager.PlayerDataStore;
 import com.aethor.aethorquests.manager.QuestManager;
+import com.aethor.aethorquests.marker.MarkerHologramController;
+import com.aethor.aethorquests.marker.MarkerUpdateListener;
+import com.aethor.aethorquests.marker.QuestMarkerService;
 import com.aethor.aethorquests.tracker.KillObjectiveTracker;
 import com.aethor.aethorquests.tracker.TalkObjectiveTracker;
 import com.aethor.aethorquests.tracker.VisitObjectiveTracker;
@@ -42,6 +45,10 @@ public class AethorQuestsPlugin extends JavaPlugin {
     private TalkObjectiveTracker talkTracker;
     private VisitObjectiveTracker visitTracker;
     private BukkitTask autoSaveTask;
+    
+    // Quest Markers
+    private QuestMarkerService markerService;
+    private MarkerHologramController markerController;
     
     // Debug mode
     private boolean debug;
@@ -77,6 +84,9 @@ public class AethorQuestsPlugin extends JavaPlugin {
         // Register commands
         registerCommands();
         
+        // Initialize quest marker system
+        initializeMarkerSystem();
+        
         // Start periodic tasks
         startPeriodicTasks();
         
@@ -99,6 +109,11 @@ public class AethorQuestsPlugin extends JavaPlugin {
     
     @Override
     public void onDisable() {
+        // Stop quest marker system
+        if (markerController != null) {
+            markerController.stop();
+        }
+        
         // Stop web server
         if (webServer != null) {
             webServer.stop();
@@ -209,5 +224,26 @@ public class AethorQuestsPlugin extends JavaPlugin {
     
     public boolean isDebug() {
         return debug;
+    }
+    
+    public MarkerHologramController getMarkerController() {
+        return markerController;
+    }
+    
+    /**
+     * Initializes the quest marker system
+     */
+    private void initializeMarkerSystem() {
+        markerService = new QuestMarkerService(this);
+        markerController = new MarkerHologramController(this, markerService);
+        
+        // Register marker update listener
+        getServer().getPluginManager().registerEvents(
+            new MarkerUpdateListener(this, markerController), this);
+        
+        // Start the marker system
+        markerController.start();
+        
+        getLogger().info("Quest marker system initialized");
     }
 }

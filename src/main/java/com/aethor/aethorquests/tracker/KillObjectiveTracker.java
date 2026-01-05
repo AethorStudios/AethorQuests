@@ -106,6 +106,12 @@ public class KillObjectiveTracker implements Listener {
         if (quest.isLastObjective(state.getObjectiveIndex())) {
             // Quest fully completed
             state.setStatus(QuestStatus.COMPLETED);
+            
+            // Refresh quest marker for turn-in NPC
+            if (plugin.getMarkerController() != null && quest.getGiverNpcId() != null) {
+                plugin.getMarkerController().refreshMarkerForPlayerAndNpc(player, quest.getGiverNpcId());
+            }
+            
             plugin.getQuestUI().notifyQuestComplete(player, quest);
         } else {
             // Advance to next objective

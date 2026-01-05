@@ -168,6 +168,11 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
         state.setStatus(QuestStatus.ACTIVE);
         plugin.getPlayerDataStore().setQuestState(playerId, state);
         
+        // Refresh quest marker for this NPC
+        if (plugin.getMarkerController() != null && quest.getGiverNpcId() != null) {
+            plugin.getMarkerController().refreshMarkerForPlayerAndNpc(player, quest.getGiverNpcId());
+        }
+        
         // Notify player
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("Quest Accepted!", NamedTextColor.GREEN));
@@ -225,6 +230,11 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
         state.setStatus(QuestStatus.TURNED_IN);
         plugin.getPlayerDataStore().setQuestState(playerId, state);
         
+        // Refresh quest marker for this NPC
+        if (plugin.getMarkerController() != null && quest.getGiverNpcId() != null) {
+            plugin.getMarkerController().refreshMarkerForPlayerAndNpc(player, quest.getGiverNpcId());
+        }
+        
         // Notify player
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("═══════════════════════", NamedTextColor.GOLD));
@@ -263,6 +273,11 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
         
         QuestDefinition quest = plugin.getQuestManager().getQuest(questId);
         String questName = quest != null ? quest.getTitle() : questId;
+        
+        // Refresh quest marker for this NPC
+        if (plugin.getMarkerController() != null && quest != null && quest.getGiverNpcId() != null) {
+            plugin.getMarkerController().refreshMarkerForPlayerAndNpc(player, quest.getGiverNpcId());
+        }
         
         player.sendMessage(Component.text("Quest abandoned: ", NamedTextColor.YELLOW)
                 .append(Component.text(questName, NamedTextColor.RED)));

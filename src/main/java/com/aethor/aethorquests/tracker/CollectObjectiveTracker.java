@@ -105,6 +105,12 @@ public class CollectObjectiveTracker {
                     // Advance objective
                     if (quest.isLastObjective(state.getObjectiveIndex())) {
                         state.setStatus(QuestStatus.COMPLETED);
+                        
+                        // Refresh quest marker for turn-in NPC
+                        if (plugin.getMarkerController() != null && quest.getGiverNpcId() != null) {
+                            plugin.getMarkerController().refreshMarkerForPlayerAndNpc(player, quest.getGiverNpcId());
+                        }
+                        
                         break;
                     } else {
                         state.advanceToNextObjective();
