@@ -123,7 +123,9 @@ public class QuestFileManager {
      * Note: This is a placeholder - proper serialization should be implemented
      */
     public void saveQuest(QuestDefinition quest) {
-        // For now, save all quests since partial save is complex
+        // Update the quest in the manager's memory first
+        plugin.getQuestManager().updateQuest(quest);
+        // Then save all quests to file
         saveAllQuests();
     }
     

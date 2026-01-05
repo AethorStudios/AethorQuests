@@ -247,6 +247,14 @@ public class QuestManager {
     }
     
     /**
+     * Update an existing quest in memory
+     */
+    public void updateQuest(QuestDefinition quest) {
+        quests.put(quest.getId(), quest);
+        plugin.getLogger().info("Updated quest in memory: " + quest.getId());
+    }
+    
+    /**
      * Reload all quests
      */
     public void reload() {
