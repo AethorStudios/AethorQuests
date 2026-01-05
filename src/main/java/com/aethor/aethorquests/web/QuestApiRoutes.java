@@ -104,6 +104,15 @@ public class QuestApiRoutes {
             QuestDefinition updatedQuest = gson.fromJson(ctx.body(), QuestDefinition.class);
             // Note: Quest ID cannot be changed via this endpoint
             
+            // Debug logging
+            plugin.getLogger().info("Updating quest: " + updatedQuest.getId());
+            plugin.getLogger().info("Dialogue: " + updatedQuest.getDialogue());
+            if (updatedQuest.getDialogue() != null) {
+                plugin.getLogger().info("Accept dialogue: " + updatedQuest.getDialogue().getAcceptDialogue());
+                plugin.getLogger().info("Progress dialogue: " + updatedQuest.getDialogue().getProgressDialogue());
+                plugin.getLogger().info("Completion dialogue: " + updatedQuest.getDialogue().getCompletionDialogue());
+            }
+            
             // Save to file and reload
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 fileManager.saveQuest(updatedQuest);
