@@ -41,7 +41,7 @@ public class DialogueSession {
         this.currentNode = nodes.get(startNodeId);
         this.currentLineIndex = 0;
         this.waitingForChoice = false;
-        this.lastAdvanceTime = System.currentTimeMillis();
+        this.lastAdvanceTime = 0;  // Start at 0 to allow immediate advance
         this.context = DialogueContext.QUEST_INTRO;
         
         if (currentNode == null) {
