@@ -49,6 +49,9 @@ Desktop.ini
 *.tar.gz
 *.rar
 
+# Exception: Include the AethorNPCS API jar
+!aethornpcs-api-*.jar
+
 # BUT keep these important JARs
 !.mvn/wrapper/maven-wrapper.jar
 !aethornpcs-api-*.jar
