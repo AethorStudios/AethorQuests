@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 
 import com.aethor.aethorquests.AethorQuestsPlugin;
+import com.aethor.aethorquests.model.Dialogue;
 import com.aethor.aethorquests.model.Objective;
 import com.aethor.aethorquests.model.ObjectiveType;
 import com.aethor.aethorquests.model.QuestDefinition;
