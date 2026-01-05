@@ -398,9 +398,9 @@ class AethorQuestsApp {
     }
     
     async saveQuest() {
-        const id = document.getElementById('questId').value;
-        const isEdit = this.quests.some(q => q.id === id);
-        const existingQuest = this.quests.find(q => q.id === id);
+        const questId = document.getElementById('questId').value;
+        const isEdit = this.quests.some(q => q.id === questId);
+        const existingQuest = this.quests.find(q => q.id === questId);
         
         try {
             // Collect objectives
@@ -438,22 +438,22 @@ class AethorQuestsApp {
             
             // Collect item rewards
             const items = [];
-            document.querySelectorAll('#itemRewardsList .item-reward-item').forEach(item => {
+            document.querySelectorAll('#itemRewardsList .item-reward-item').forEach(itemElement => {
                 items.push({
-                    type: item.querySelector('.item-material').value,
-                    amount: parseInt(item.querySelector('.item-amount').value) || 1
+                    type: itemElement.querySelector('.item-material').value,
+                    amount: parseInt(itemElement.querySelector('.item-amount').value) || 1
                 });
             });
             
             // Collect command rewards
             const commands = [];
-            document.querySelectorAll('#commandsList .command-item').forEach(item => {
-                const cmd = item.querySelector('.command-input').value.trim();
+            document.querySelectorAll('#commandsList .command-item').forEach(cmdElement => {
+                const cmd = cmdElement.querySelector('.command-input').value.trim();
                 if (cmd) commands.push(cmd);
             });
             
             const quest = {
-                id: id,
+                id: questId,
                 title: document.getElementById('questTitle').value,
                 giverNpcId: document.getElementById('questNpcId').value,
                 description: document.getElementById('questDescription').value.split('\n').filter(l => l.trim()),
@@ -476,10 +476,10 @@ class AethorQuestsApp {
             };
             
             console.log('Saving quest:', quest);
-            console.log('Quest ID:', id);
-            console.log('URL:', isEdit ? `/api/quests/${id}` : '/api/quests');
+            console.log('Quest ID:', questId);
+            console.log('URL:', isEdit ? `/api/quests/${questId}` : '/api/quests');
             
-            const url = isEdit ? `/api/quests/${id}` : '/api/quests';
+            const url = isEdit ? `/api/quests/${questId}` : '/api/quests';
             const method = isEdit ? 'PUT' : 'POST';
             
             const response = await fetch(url, {
