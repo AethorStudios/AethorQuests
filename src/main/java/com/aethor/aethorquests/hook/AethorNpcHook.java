@@ -51,6 +51,13 @@ public class AethorNpcHook {
             
             enabled = true;
             plugin.getLogger().info("Successfully hooked into AethorNPCS API");
+            
+            // Register interaction handler
+            npcApi.registerInteractionHandler((player, npcId, clickType) -> {
+                handleNpcInteraction(player, npcId, clickType);
+            });
+            plugin.getLogger().info("Registered NPC interaction handler");
+            
             return true;
             
         } catch (Exception e) {
