@@ -2,6 +2,7 @@ package com.aethor.aethorquests.marker;
 
 import com.aethor.aethornpcs.api.dto.Npc;
 import com.aethor.aethorquests.AethorQuestsPlugin;
+import eu.decentsoftware.holograms.api.DHAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -248,23 +249,24 @@ public class MarkerHologramController {
     }
     
     /**
-     * Creates a new hologram using DecentHolograms API (placeholder - implement with actual API)
+     * Creates a new hologram using DecentHolograms API
      */
     private void createHologram(String name, Location location, String text, Player viewer) {
-        // TODO: Implement DecentHolograms integration
-        // For now, this is a placeholder that shows the marker approach
-        // You'll need to use DecentHolograms' per-player hologram API:
-        // 
-        // DHAPI.createHologram(name, location);
-        // DHAPI.setHologramLine(name, 0, text);
-        // DHAPI.addHologramViewer(name, viewer);
-        //
-        // Note: Make sure the hologram is only visible to the specified viewer
-        
-        if (plugin.isDebug()) {
-            plugin.getLogger().info("Creating marker hologram '" + name + "' at " + 
-                    location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + 
-                    " for player " + viewer.getName());
+        try {
+            // Create hologram (false = not saved to file)
+            DHAPI.createHologram(name, location, false);
+            DHAPI.setHologramLine(name, 0, text);
+            
+            // Make it only visible to this player
+            DHAPI.addHologramViewer(name, viewer);
+            
+            if (plugin.isDebug()) {
+                plugin.getLogger().info("Created marker hologram '" + name + "' at " + 
+                        location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + 
+                        " for player " + viewer.getName());
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to create hologram '" + name + "': " + e.getMessage());
         }
     }
     
@@ -272,12 +274,21 @@ public class MarkerHologramController {
      * Updates an existing hologram
      */
     private void updateHologram(String name, Location location, String text) {
-        // TODO: Implement DecentHolograms integration
-        // DHAPI.moveHologram(name, location);
-        // DHAPI.setHologramLine(name, 0, text);
-        
-        if (plugin.isDebug()) {
-            plugin.getLogger().info("Updating marker hologram '" + name + "'");
+        try {
+            // Check if hologram exists
+            if (DHAPI.getHologram(name) == null) {
+                return;
+            }
+            
+            // Update position and text
+            DHAPI.moveHologram(name, location);
+            DHAPI.setHologramLine(name, 0, text);
+            
+            if (plugin.isDebug()) {
+                plugin.getLogger().info("Updated marker hologram '" + name + "'");
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to update hologram '" + name + "': " + e.getMessage());
         }
     }
     
@@ -285,11 +296,14 @@ public class MarkerHologramController {
      * Deletes a hologram
      */
     private void deleteHologram(String name) {
-        // TODO: Implement DecentHolograms integration
-        // DHAPI.removeHologram(name);
-        
-        if (plugin.isDebug()) {
-            plugin.getLogger().info("Deleting marker hologram '" + name + "'");
+        try {
+            DHAPI.removeHologram(name);
+            
+            if (plugin.isDebug()) {
+                plugin.getLogger().info("Deleted marker hologram '" + name + "'");
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to delete hologram '" + name + "': " + e.getMessage());
         }
     }
 }

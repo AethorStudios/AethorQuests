@@ -2,7 +2,7 @@ name: AethorQuests
 version: '${project.version}'
 main: com.aethor.aethorquests.AethorQuestsPlugin
 api-version: '1.21'
-softdepend: [AethorNPCS]
+depend: [AethorNPCS, DecentHolograms]
 author: Aethor
 description: Production-quality quest system integrated with AethorNPCS
 
