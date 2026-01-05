@@ -131,7 +131,9 @@ public class AethorNpcHook {
     }
     
     /**
-     * Get the display name of an NPC
+     * Get the display name of an NPC.
+     * Since the AethorNPCS API doesn't provide a display name method,
+     * we format the NPC ID into a readable format (e.g., "quest_giver" -> "Quest Giver")
      */
     public String getNpcName(String npcId) {
         if (!enabled || npcApi == null) {
@@ -141,7 +143,21 @@ public class AethorNpcHook {
         try {
             var npc = npcApi.getNpc(npcId);
             if (npc.isPresent()) {
-                return npc.get().getName();
+                // Format the NPC ID into a readable name
+                // Replace underscores with spaces and capitalize each word
+                String id = npc.get().getId();
+                String[] words = id.split("_");
+                StringBuilder name = new StringBuilder();
+                for (String word : words) {
+                    if (word.length() > 0) {
+                        name.append(Character.toUpperCase(word.charAt(0)));
+                        if (word.length() > 1) {
+                            name.append(word.substring(1).toLowerCase());
+                        }
+                        name.append(" ");
+                    }
+                }
+                return name.toString().trim();
             }
             return "NPC";
         } catch (Exception e) {
