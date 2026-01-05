@@ -51,12 +51,12 @@ public class DialogueRenderer {
             return;
         }
         
-        // Format: [Quest] <NPC Name>: <Dialogue Text>
-        Component message = Component.empty()
-                .append(Component.text("[Quest] ", getPrefixColor(), TextDecoration.BOLD))
+        // Format with quote marks for a more polished look
+        Component message = Component.text("  ", NamedTextColor.DARK_GRAY)
+                .append(Component.text("❝ ", NamedTextColor.GRAY))
                 .append(parseMiniMessage(session.getNpcName()))
-                .append(Component.text(": ", NamedTextColor.GRAY))
-                .append(Component.text(translateColorCodes(line), getTextColor()));
+                .append(Component.text(" › ", NamedTextColor.DARK_GRAY))
+                .append(parseDialogueText(line));
         
         player.sendMessage(message);
         
@@ -79,22 +79,42 @@ public class DialogueRenderer {
         }
         
         player.sendMessage(Component.empty());
-        player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
-        player.sendMessage(Component.text("Choose a response:", NamedTextColor.YELLOW, TextDecoration.BOLD));
+        player.sendMessage(Component.text("  ╭───────────────────────────╮", NamedTextColor.DARK_GRAY));
+        player.sendMessage(Component.text("  │ ", NamedTextColor.DARK_GRAY)
+                .append(Component.text("Available Responses", NamedTextColor.GOLD, TextDecoration.BOLD))
+                .append(Component.text("       │", NamedTextColor.DARK_GRAY)));
+        player.sendMessage(Component.text("  ╰───────────────────────────╯", NamedTextColor.DARK_GRAY));
         player.sendMessage(Component.empty());
         
         for (DialogueOption option : currentNode.getOptions()) {
-            Component optionLine = Component.text(option.getId() + ") ", NamedTextColor.GOLD, TextDecoration.BOLD)
-                    .append(Component.text(translateColorCodes(option.getText()), NamedTextColor.WHITE))
-                    .hoverEvent(HoverEvent.showText(Component.text("Click to select")))
+            // Icon based on common option patterns
+            String icon = getOptionIcon(option.getText());
+            NamedTextColor optionColor = getOptionColor(option.getText());
+            
+            Component optionLine = Component.text("    " + icon + " ", optionColor, TextDecoration.BOLD)
+                    .append(Component.text("[" + option.getId() + "] ", NamedTextColor.GRAY))
+                    .append(Component.text(translateColorCodes(option.getText()), optionColor))
+                    .hoverEvent(HoverEvent.showText(
+                            Component.text("━━━━━━━━━━━━━━━━", NamedTextColor.GRAY)
+                                    .append(Component.newline())
+                                    .append(Component.text("➥ ", optionColor))
+                                    .append(Component.text("Click to select", NamedTextColor.WHITE))
+                                    .append(Component.newline())
+                                    .append(Component.text("━━━━━━━━━━━━━━━━", NamedTextColor.GRAY))
+                    ))
                     .clickEvent(ClickEvent.runCommand("/quest dialogue select " + option.getId()));
             
             player.sendMessage(optionLine);
         }
         
         player.sendMessage(Component.empty());
-        player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
-        player.sendMessage(Component.text("(Click an option or press number key 1-9)", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("  ⌨ ", NamedTextColor.DARK_GRAY)
+                .append(Component.text("Press ", NamedTextColor.GRAY))
+                .append(Component.text("[1-9]", NamedTextColor.YELLOW))
+                .append(Component.text(" or ", NamedTextColor.GRAY))
+                .append(Component.text("Click", NamedTextColor.AQUA))
+                .append(Component.text(" to choose", NamedTextColor.GRAY)));
+        player.sendMessage(Component.empty());
     }
     
     /**
@@ -106,7 +126,8 @@ public class DialogueRenderer {
         String hintLocation = config.getString(CONFIG_HINT_LOCATION, "actionbar");
         String hintText = config.getString(CONFIG_HINT_TEXT, DEFAULT_HINT);
         
-        Component hint = Component.text(translateColorCodes(hintText), NamedTextColor.GRAY);
+        Component hint = Component.text("  ⇩ ", NamedTextColor.DARK_GRAY)
+                .append(Component.text(translateColorCodes(hintText), NamedTextColor.GRAY, TextDecoration.ITALIC));
         
         if ("actionbar".equalsIgnoreCase(hintLocation)) {
             player.sendActionBar(hint);
@@ -123,10 +144,13 @@ public class DialogueRenderer {
      */
     public void renderDialogueStart(Player player, String npcName) {
         player.sendMessage(Component.empty());
-        player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
-        player.sendMessage(Component.text("Talking with ", NamedTextColor.GRAY)
-                .append(parseMiniMessage(npcName)));
-        player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("  ╔═══════════════════════════════════════╗", NamedTextColor.GOLD));
+        player.sendMessage(Component.text("  ║ ", NamedTextColor.GOLD)
+                .append(Component.text("⚐ ", NamedTextColor.YELLOW))
+                .append(Component.text("Conversation with ", NamedTextColor.GRAY))
+                .append(parseMiniMessage(npcName))
+                .append(Component.text("        ║", NamedTextColor.GOLD)));
+        player.sendMessage(Component.text("  ╚═══════════════════════════════════════╝", NamedTextColor.GOLD));
         player.sendMessage(Component.empty());
     }
     
@@ -137,7 +161,8 @@ public class DialogueRenderer {
      */
     public void renderDialogueEnd(Player player) {
         player.sendMessage(Component.empty());
-        player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("  ╚═══════════════════════════════════════╝", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("    Conversation ended", NamedTextColor.DARK_GRAY, TextDecoration.ITALIC));
         player.sendMessage(Component.empty());
     }
     
@@ -154,6 +179,66 @@ public class DialogueRenderer {
         } catch (Exception e) {
             // Fallback to plain text if parsing fails
             return Component.text(text, getNpcColor());
+        }
+    }
+    
+    /**
+     * Parses dialogue text with MiniMessage support and color codes.
+     *
+     * @param text The dialogue text
+     * @return Parsed Component
+     */
+    private Component parseDialogueText(String text) {
+        try {
+            // Try MiniMessage first
+            return miniMessage.deserialize(text);
+        } catch (Exception e) {
+            // Fallback to legacy color codes
+            return Component.text(translateColorCodes(text), getTextColor());
+        }
+    }
+    
+    /**
+     * Gets an icon based on option text content.
+     *
+     * @param optionText The option text
+     * @return Icon character
+     */
+    private String getOptionIcon(String optionText) {
+        String lower = optionText.toLowerCase();
+        if (lower.contains("accept") || lower.contains("yes") || lower.contains("agree") || lower.contains("sure")) {
+            return "✓";
+        } else if (lower.contains("decline") || lower.contains("no") || lower.contains("reject") || lower.contains("refuse")) {
+            return "✗";
+        } else if (lower.contains("turn in") || lower.contains("complete") || lower.contains("finish")) {
+            return "✔";
+        } else if (lower.contains("ask") || lower.contains("question") || lower.contains("why")) {
+            return "?";
+        } else if (lower.contains("leave") || lower.contains("goodbye") || lower.contains("exit")) {
+            return "↩";
+        } else {
+            return "►";
+        }
+    }
+    
+    /**
+     * Gets a color based on option text content.
+     *
+     * @param optionText The option text
+     * @return Color for the option
+     */
+    private NamedTextColor getOptionColor(String optionText) {
+        String lower = optionText.toLowerCase();
+        if (lower.contains("accept") || lower.contains("yes") || lower.contains("agree") || lower.contains("turn in")) {
+            return NamedTextColor.GREEN;
+        } else if (lower.contains("decline") || lower.contains("no") || lower.contains("reject")) {
+            return NamedTextColor.RED;
+        } else if (lower.contains("ask") || lower.contains("question")) {
+            return NamedTextColor.AQUA;
+        } else if (lower.contains("leave") || lower.contains("goodbye")) {
+            return NamedTextColor.GRAY;
+        } else {
+            return NamedTextColor.YELLOW;
         }
     }
     
