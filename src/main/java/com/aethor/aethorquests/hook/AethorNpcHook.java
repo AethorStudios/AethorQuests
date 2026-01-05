@@ -129,4 +129,24 @@ public class AethorNpcHook {
             return false;
         }
     }
+    
+    /**
+     * Get the display name of an NPC
+     */
+    public String getNpcName(String npcId) {
+        if (!enabled || npcApi == null) {
+            return "NPC";
+        }
+        
+        try {
+            var npc = npcApi.getNpc(npcId);
+            if (npc.isPresent()) {
+                return npc.get().getName();
+            }
+            return "NPC";
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Error getting NPC name: " + npcId, e);
+            return "NPC";
+        }
+    }
 }

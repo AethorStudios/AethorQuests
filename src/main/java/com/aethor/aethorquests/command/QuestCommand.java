@@ -105,6 +105,15 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
                 handleTrackQuest(player, args[1]);
             }
             
+            case "dialogue" -> {
+                if (args.length < 3 || !args[1].equalsIgnoreCase("select")) {
+                    player.sendMessage(Component.text("Usage: /quest dialogue select <option>", NamedTextColor.RED));
+                    return true;
+                }
+                
+                handleDialogueSelect(player, args[2]);
+            }
+            
             case "reload" -> {
                 if (!player.hasPermission("aethorquests.admin")) {
                     player.sendMessage(Component.text("You don't have permission to reload quests.", NamedTextColor.RED));
@@ -279,6 +288,77 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(Component.text("Tracking: ", NamedTextColor.YELLOW)
                     .append(Component.text(quest.getTitle(), NamedTextColor.WHITE)));
             player.sendMessage(Component.text("➤ " + currentObj.getDescription(), NamedTextColor.AQUA));
+        }
+    }
+    
+    private void handleDialogueSelect(Player player, String optionIdStr) {
+        UUID playerId = player.getUniqueId();
+        
+        // Check if player has active dialogue
+        if (!plugin.getDialogueManager().hasActiveSession(playerId)) {
+            player.sendMessage(Component.text("You don't have an active dialogue.", NamedTextColor.RED));
+            return;
+        }
+        
+        // Parse option ID
+        int optionId;
+        try {
+            optionId = Integer.parseInt(optionIdStr);
+        } catch (NumberFormatException e) {
+            player.sendMessage(Component.text("Invalid option number.", NamedTextColor.RED));
+            return;
+        }
+        
+        // Get the session
+        var session = plugin.getDialogueManager().getSession(playerId);
+        if (session == null || !session.isWaitingForChoice()) {
+            player.sendMessage(Component.text("No dialogue choice is currently available.", NamedTextColor.RED));
+            return;
+        }
+        
+        // Get the option
+        var option = session.getCurrentNode().getOptionById(optionId);
+        if (option == null) {
+            player.sendMessage(Component.text("Invalid option: " + optionId, NamedTextColor.RED));
+            return;
+        }
+        
+        // Handle the selection via the input handler logic
+        var renderer = new com.aethor.aethorquests.ui.DialogueRenderer(plugin.getConfig());
+        
+        // Execute any command associated with the option
+        if (option.hasCommand()) {
+            executeDialogueCommand(player, session, option.getCommand());
+        }
+        
+        // Select the option
+        boolean selected = session.selectOption(optionId);
+        
+        if (selected) {
+            if (!session.isComplete()) {
+                renderer.renderCurrentLine(player, session);
+            } else {
+                renderer.renderDialogueEnd(player);
+                plugin.getDialogueManager().endSession(playerId);
+            }
+        }
+    }
+    
+    private void executeDialogueCommand(Player player, com.aethor.aethorquests.model.dialogue.DialogueSession session, String command) {
+        switch (command.toLowerCase()) {
+            case "accept_quest" -> {
+                if (session.getQuestId() != null) {
+                    handleAcceptQuest(player, session.getQuestId());
+                }
+            }
+            case "decline_quest" -> {
+                player.sendMessage(Component.text("Perhaps another time...", NamedTextColor.GRAY));
+            }
+            case "turn_in_quest" -> {
+                if (session.getQuestId() != null) {
+                    handleTurnInQuest(player, session.getQuestId());
+                }
+            }
         }
     }
     

@@ -7,7 +7,9 @@ import org.bukkit.scheduler.BukkitTask;
 import com.aethor.aethorquests.command.QuestAdminCommand;
 import com.aethor.aethorquests.command.QuestCommand;
 import com.aethor.aethorquests.hook.AethorNpcHook;
+import com.aethor.aethorquests.listener.DialogueInputHandler;
 import com.aethor.aethorquests.listener.PlayerListener;
+import com.aethor.aethorquests.manager.DialogueManager;
 import com.aethor.aethorquests.manager.PlayerDataStore;
 import com.aethor.aethorquests.manager.QuestManager;
 import com.aethor.aethorquests.tracker.KillObjectiveTracker;
@@ -25,6 +27,7 @@ public class AethorQuestsPlugin extends JavaPlugin {
     // Managers
     private QuestManager questManager;
     private PlayerDataStore playerDataStore;
+    private DialogueManager dialogueManager;
     
     // UI
     private QuestUI questUI;
@@ -54,6 +57,7 @@ public class AethorQuestsPlugin extends JavaPlugin {
         // Initialize managers
         questManager = new QuestManager(this);
         playerDataStore = new PlayerDataStore(this);
+        dialogueManager = new DialogueManager();
         questUI = new QuestUI(this);
         
         // Initialize AethorNPCS hook
@@ -100,6 +104,11 @@ public class AethorQuestsPlugin extends JavaPlugin {
             webServer.stop();
         }
         
+        // Clean up dialogue sessions
+        if (dialogueManager != null) {
+            dialogueManager.cleanup();
+        }
+        
         // Cancel all tasks
         if (visitTracker != null) {
             visitTracker.cancel();
@@ -120,6 +129,7 @@ public class AethorQuestsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new KillObjectiveTracker(this), this);
         getServer().getPluginManager().registerEvents(new com.aethor.aethorquests.gui.QuestEditorListener(this), this);
         getServer().getPluginManager().registerEvents(new com.aethor.aethorquests.listener.NpcInteractionListener(this), this);
+        getServer().getPluginManager().registerEvents(new DialogueInputHandler(this), this);
         
         // Initialize talk tracker (not event-based)
         talkTracker = new TalkObjectiveTracker(this);
@@ -191,6 +201,10 @@ public class AethorQuestsPlugin extends JavaPlugin {
     
     public TalkObjectiveTracker getTalkTracker() {
         return talkTracker;
+    }
+    
+    public DialogueManager getDialogueManager() {
+        return dialogueManager;
     }
     
     public boolean isDebug() {

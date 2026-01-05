@@ -2,6 +2,8 @@ package com.aethor.aethorquests.ui;
 
 import com.aethor.aethorquests.AethorQuestsPlugin;
 import com.aethor.aethorquests.model.*;
+import com.aethor.aethorquests.model.dialogue.DialogueOption;
+import com.aethor.aethorquests.model.dialogue.DialogueSession;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -9,6 +11,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +29,100 @@ public class QuestUI {
      * Show quest menu for an NPC
      */
     public void showNpcQuestMenu(Player player, String npcId, List<QuestDefinition> quests) {
+        UUID playerId = player.getUniqueId();
+        
+        // Get NPC name for dialogue
+        String npcName = plugin.getNpcHook().getNpcName(npcId);
+        if (npcName == null) {
+            npcName = "NPC";
+        }
+        
+        // Show dialogue for the first quest using progressive dialogue system
+        if (!quests.isEmpty()) {
+            QuestDefinition firstQuest = quests.get(0);
+            PlayerQuestState state = plugin.getPlayerDataStore().getQuestState(playerId, firstQuest.getId());
+            QuestStatus status = state != null ? state.getStatus() : QuestStatus.NOT_STARTED;
+            
+            // Start progressive dialogue if quest has dialogue configured
+            if (firstQuest.getDialogue() != null) {
+                startQuestDialogue(player, npcId, npcName, firstQuest, status);
+                return; // Dialogue system will handle the rest
+            }
+        }
+        
+        // Fallback to old menu system if no dialogue configured
+        showQuestMenuLegacy(player, npcId, quests);
+    }
+    
+    /**
+     * Starts a progressive dialogue session for a quest.
+     *
+     * @param player The player
+     * @param npcId ID of the NPC
+     * @param npcName Display name of the NPC
+     * @param quest The quest
+     * @param status The current quest status for this player
+     */
+    private void startQuestDialogue(Player player, String npcId, String npcName, 
+                                   QuestDefinition quest, QuestStatus status) {
+        List<String> dialogueLines;
+        List<DialogueOption> options = new ArrayList<>();
+        
+        // Determine which dialogue to show based on quest status
+        if (status == QuestStatus.NOT_STARTED || status == null) {
+            dialogueLines = quest.getDialogue().getAcceptDialogue();
+            
+            // Add accept/decline options
+            options.add(new DialogueOption(1, "&aAccept the quest", null, "accept_quest"));
+            options.add(new DialogueOption(2, "&cDecline", null, "decline_quest"));
+            
+        } else if (status == QuestStatus.ACTIVE) {
+            dialogueLines = quest.getDialogue().getProgressDialogue();
+            // No options for in-progress dialogue, it just closes
+            
+        } else if (status == QuestStatus.COMPLETED) {
+            dialogueLines = quest.getDialogue().getCompletionDialogue();
+            
+            // Add turn-in option
+            options.add(new DialogueOption(1, "&aTurn in quest", null, "turn_in_quest"));
+            
+        } else {
+            // Quest already completed
+            return;
+        }
+        
+        // If no dialogue lines configured, skip
+        if (dialogueLines == null || dialogueLines.isEmpty()) {
+            return;
+        }
+        
+        // Start the dialogue session
+        DialogueSession session = plugin.getDialogueManager()
+                .startDialogueWithChoice(player.getUniqueId(), npcId, npcName, dialogueLines, options);
+        
+        session.setQuestId(quest.getId());
+        
+        // Set context based on status
+        if (status == QuestStatus.NOT_STARTED || status == null) {
+            session.setContext(DialogueSession.DialogueContext.QUEST_INTRO);
+        } else if (status == QuestStatus.ACTIVE) {
+            session.setContext(DialogueSession.DialogueContext.QUEST_PROGRESS);
+        } else if (status == QuestStatus.COMPLETED) {
+            session.setContext(DialogueSession.DialogueContext.QUEST_COMPLETE);
+        } else {
+            session.setContext(DialogueSession.DialogueContext.GENERIC);
+        }
+        
+        // Render the dialogue start and first line
+        DialogueRenderer renderer = new DialogueRenderer(plugin.getConfig());
+        renderer.renderDialogueStart(player, npcName);
+        renderer.renderCurrentLine(player, session);
+    }
+    
+    /**
+     * Shows the legacy quest menu (non-progressive dialogue).
+     */
+    private void showQuestMenuLegacy(Player player, String npcId, List<QuestDefinition> quests) {
         UUID playerId = player.getUniqueId();
         
         // Header
@@ -162,6 +259,19 @@ public class QuestUI {
      * Show quest turn-in confirmation
      */
     public void showQuestTurnIn(Player player, QuestDefinition quest) {
+        // Show completion dialogue if available
+        if (quest.getDialogue() != null) {
+            List<String> dialogue = quest.getDialogue().getCompletionDialogue();
+            if (dialogue != null && !dialogue.isEmpty()) {
+                player.sendMessage(Component.empty());
+                for (String line : dialogue) {
+                    // Replace color codes (& to §)
+                    player.sendMessage(Component.text(line.replace("&", "§")));
+                }
+                player.sendMessage(Component.empty());
+            }
+        }
+        
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("Quest Complete!", NamedTextColor.GOLD, TextDecoration.BOLD));
         player.sendMessage(Component.text(quest.getTitle(), NamedTextColor.YELLOW));

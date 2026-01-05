@@ -40,3 +40,20 @@ storage:
   autoSaveTicks: 6000  # 5 minutes
   # Save on quit
   saveOnQuit: true
+
+# Dialogue system settings
+dialogue:
+  # Color for the [Quest] prefix
+  prefix-color: "gold"
+  # Color for NPC names
+  npc-color: "yellow"
+  # Color for dialogue text
+  text-color: "white"
+  # Where to show the continue hint: "actionbar" or "chat"
+  hint-location: "actionbar"
+  # Text for the continue hint (supports color codes with &)
+  hint-text: "&7(Press [SHIFT] to continue)"
+  # Minimum time between dialogue line advances (milliseconds)
+  advance-debounce: 200
+  # Allow numeric key input for dialogue choices (1-9)
+  allow-numeric-input: true
