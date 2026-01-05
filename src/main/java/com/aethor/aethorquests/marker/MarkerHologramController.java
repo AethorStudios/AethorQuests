@@ -3,6 +3,7 @@ package com.aethor.aethorquests.marker;
 import com.aethor.aethornpcs.api.dto.Npc;
 import com.aethor.aethorquests.AethorQuestsPlugin;
 import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -254,11 +255,18 @@ public class MarkerHologramController {
     private void createHologram(String name, Location location, String text, Player viewer) {
         try {
             // Create hologram (false = not saved to file)
-            DHAPI.createHologram(name, location, false);
-            DHAPI.setHologramLine(name, 0, text);
+            Hologram hologram = DHAPI.createHologram(name, location, false);
+            if (hologram == null) {
+                plugin.getLogger().warning("Failed to create hologram '" + name + "' - hologram is null");
+                return;
+            }
             
-            // Make it only visible to this player
-            DHAPI.addHologramViewer(name, viewer);
+            // Set the text on the first line
+            DHAPI.setHologramLine(hologram, 0, text);
+            
+            // Make it only visible to this player (hide from everyone, then show to specific player)
+            hologram.setDefaultVisibleState(false);
+            hologram.setShowPlayer(viewer);
             
             if (plugin.isDebug()) {
                 plugin.getLogger().info("Created marker hologram '" + name + "' at " + 
@@ -275,14 +283,15 @@ public class MarkerHologramController {
      */
     private void updateHologram(String name, Location location, String text) {
         try {
-            // Check if hologram exists
-            if (DHAPI.getHologram(name) == null) {
+            // Get hologram object
+            Hologram hologram = DHAPI.getHologram(name);
+            if (hologram == null) {
                 return;
             }
             
             // Update position and text
-            DHAPI.moveHologram(name, location);
-            DHAPI.setHologramLine(name, 0, text);
+            DHAPI.moveHologram(hologram, location);
+            DHAPI.setHologramLine(hologram, 0, text);
             
             if (plugin.isDebug()) {
                 plugin.getLogger().info("Updated marker hologram '" + name + "'");
