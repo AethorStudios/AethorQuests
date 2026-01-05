@@ -117,6 +117,12 @@ public class QuestUI {
         DialogueRenderer renderer = new DialogueRenderer(plugin.getConfig());
         renderer.renderDialogueStart(player, npcName);
         renderer.renderCurrentLine(player, session);
+        
+        // If this is the only line and there are choices, show them immediately
+        if (session.getCurrentNode().getLines().size() == 1 && session.getCurrentNode().hasOptions()) {
+            session.advanceLine(); // Move past the single line
+            renderer.renderChoices(player, session);
+        }
     }
     
     /**

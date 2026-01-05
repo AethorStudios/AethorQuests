@@ -8,6 +8,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -18,6 +19,7 @@ import org.bukkit.entity.Player;
 public class DialogueRenderer {
     
     private final FileConfiguration config;
+    private final MiniMessage miniMessage;
     
     // Configuration keys
     private static final String CONFIG_PREFIX_COLOR = "dialogue.prefix-color";
@@ -34,6 +36,7 @@ public class DialogueRenderer {
     
     public DialogueRenderer(FileConfiguration config) {
         this.config = config;
+        this.miniMessage = MiniMessage.miniMessage();
     }
     
     /**
@@ -49,7 +52,7 @@ public class DialogueRenderer {
         }
         
         // Format: [Quest] <NPC Name>: <Dialogue Text>
-        Component message = Component.empty()
+        Component messagparseMiniMessage(session.getNpcName
                 .append(Component.text("[Quest] ", getPrefixColor(), TextDecoration.BOLD))
                 .append(Component.text(session.getNpcName(), getNpcColor()))
                 .append(Component.text(": ", NamedTextColor.GRAY))
@@ -122,7 +125,7 @@ public class DialogueRenderer {
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
         player.sendMessage(Component.text("Talking with ", NamedTextColor.GRAY)
-                .append(Component.text(npcName, getNpcColor(), TextDecoration.BOLD)));
+                .append(parseMiniMessage(npcName)));
         player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
         player.sendMessage(Component.empty());
     }
@@ -136,6 +139,22 @@ public class DialogueRenderer {
         player.sendMessage(Component.empty());
         player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
         player.sendMessage(Component.empty());
+    }
+    
+    /**
+     * Parses MiniMessage format into Adventure Component.
+     * Falls back to plain text with default color if parsing fails.
+     *
+     * @param text The text to parse (may contain MiniMessage tags)
+     * @return Parsed Component
+     */
+    private Component parseMiniMessage(String text) {
+        try {
+            return miniMessage.deserialize(text);
+        } catch (Exception e) {
+            // Fallback to plain text if parsing fails
+            return Component.text(text, getNpcColor());
+        }
     }
     
     /**
