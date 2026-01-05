@@ -116,12 +116,10 @@ public class AethorQuestsPlugin extends JavaPlugin {
     }
     
     private void registerListeners() {
-        // Note: AethorNpcHook is not registered as event listener
-        // as the API uses payloads. Integration depends on how
-        // AethorNPCS exposes interaction callbacks.
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new KillObjectiveTracker(this), this);
         getServer().getPluginManager().registerEvents(new com.aethor.aethorquests.gui.QuestEditorListener(this), this);
+        getServer().getPluginManager().registerEvents(new com.aethor.aethorquests.listener.NpcInteractionListener(this), this);
         
         // Initialize talk tracker (not event-based)
         talkTracker = new TalkObjectiveTracker(this);
