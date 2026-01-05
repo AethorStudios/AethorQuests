@@ -10,7 +10,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Optional;
 
@@ -29,15 +28,8 @@ public class NpcInteractionListener implements Listener {
         Entity entity = event.getRightClicked();
         Player player = event.getPlayer();
         
-        // Check if entity is an NPC
-        if (!isNpc(entity)) {
-            return;
-        }
-        
-        // Get NPC from API
-        Optional<Npc> npcOpt = plugin.getNpcHook().getApi().getAllNpcs().stream()
-            .filter(npc -> npc.getEntityUuid() != null && npc.getEntityUuid().equals(entity.getUniqueId()))
-            .findFirst();
+        // Try to get NPC from API using entity UUID
+        Optional<Npc> npcOpt = plugin.getNpcHook().getApi().getNpcByEntity(entity.getUniqueId());
         
         if (npcOpt.isEmpty()) {
             return;
@@ -57,20 +49,13 @@ public class NpcInteractionListener implements Listener {
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         
-        // Check if entity is an NPC
-        if (!isNpc(entity)) {
-            return;
-        }
-        
         // Check if damager is a player
         if (!(event.getDamager() instanceof Player player)) {
             return;
         }
         
-        // Get NPC from API
-        Optional<Npc> npcOpt = plugin.getNpcHook().getApi().getAllNpcs().stream()
-            .filter(npc -> npc.getEntityUuid() != null && npc.getEntityUuid().equals(entity.getUniqueId()))
-            .findFirst();
+        // Try to get NPC from API using entity UUID
+        Optional<Npc> npcOpt = plugin.getNpcHook().getApi().getNpcByEntity(entity.getUniqueId());
         
         if (npcOpt.isEmpty()) {
             return;
@@ -87,22 +72,5 @@ public class NpcInteractionListener implements Listener {
         
         // Cancel damage to NPCs
         event.setCancelled(true);
-    }
-    
-    private boolean isNpc(Entity entity) {
-        // Check scoreboard tag
-        if (entity.getScoreboardTags().contains("aethornpcs:npc")) {
-            return true;
-        }
-        
-        // Check PDC (need to get the key from API)
-        try {
-            return entity.getPersistentDataContainer().has(
-                plugin.getNpcHook().getApi().getNpcIdKey(), 
-                PersistentDataType.STRING
-            );
-        } catch (Exception e) {
-            return false;
-        }
     }
 }
