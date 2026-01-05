@@ -38,9 +38,9 @@
         <dependency>
             <groupId>com.aethor</groupId>
             <artifactId>aethornpcs-api</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/aethornpcs-api-1.0.0.jar</systemPath>
+            <systemPath>${project.basedir}/aethornpcs-api-1.0.1.jar</systemPath>
         </dependency>
 
         <!-- Javalin - Lightweight web framework -->
