@@ -311,6 +311,7 @@ public class QuestCommand implements CommandExecutor, TabCompleter {
         
         // Get the session
         var session = plugin.getDialogueManager().getSession(playerId);
+        plugin.getLogger().info("Checking session: " + (session != null ? "exists, waitingForChoice=" + session.isWaitingForChoice() : "null"));
         if (session == null || !session.isWaitingForChoice()) {
             player.sendMessage(Component.text("No dialogue choice is currently available.", NamedTextColor.RED));
             return;

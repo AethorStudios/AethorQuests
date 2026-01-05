@@ -121,6 +121,7 @@ public class QuestUI {
         // If this is the only line and there are choices, show them immediately
         if (session.getCurrentNode().getLines().size() == 1 && session.getCurrentNode().hasOptions()) {
             session.advanceLine(); // Move past the single line
+            plugin.getLogger().info("After advanceLine: waitingForChoice=" + session.isWaitingForChoice() + ", currentLine=" + session.getCurrentLineIndex());
             renderer.renderChoices(player, session);
         }
     }
