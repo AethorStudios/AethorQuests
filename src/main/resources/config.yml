@@ -8,7 +8,7 @@ webPanel:
   # Host to bind to (0.0.0.0 for all interfaces, localhost for local only)
   host: "0.0.0.0"
   # Port to run the web server on
-  port: 8080
+  port: 2267
 
 # UI mode for quest interactions
 # Options: CHAT (Adventure text components)
