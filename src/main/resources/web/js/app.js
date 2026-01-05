@@ -368,6 +368,7 @@ class AethorQuestsApp {
                 (quest.rewards?.commands || []).forEach(cmd => this.addCommandField(cmd));
                 
                 // Populate dialogue
+                console.log('Quest dialogue data:', quest.dialogue);
                 document.getElementById('dialogueAccept').value = quest.dialogue?.acceptDialogue?.join('\n') || '';
                 document.getElementById('dialogueProgress').value = quest.dialogue?.progressDialogue?.join('\n') || '';
                 document.getElementById('dialogueCompletion').value = quest.dialogue?.completionDialogue?.join('\n') || '';
@@ -476,6 +477,7 @@ class AethorQuestsApp {
             };
             
             console.log('Saving quest:', quest);
+            console.log('Dialogue being saved:', quest.dialogue);
             console.log('Quest ID:', questId);
             console.log('URL:', isEdit ? `/api/quests/${questId}` : '/api/quests');
             
