@@ -185,6 +185,13 @@ public class QuestFileManager {
             config.set(path + ".rewards.money", rewards.getMoney());
             config.set(path + ".rewards.commands", rewards.getCommands());
             config.set(path + ".rewards.items", new ArrayList<>());
+            
+            // Dialogue
+            if (quest.getDialogue() != null) {
+                config.set(path + ".dialogue.accept", quest.getDialogue().getAcceptDialogue());
+                config.set(path + ".dialogue.progress", quest.getDialogue().getProgressDialogue());
+                config.set(path + ".dialogue.completion", quest.getDialogue().getCompletionDialogue());
+            }
         }
         
         try {

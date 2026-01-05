@@ -133,6 +133,16 @@ public class QuestManager {
             quest.setRewards(reward);
         }
         
+        // Dialogue
+        ConfigurationSection dialogueSection = section.getConfigurationSection("dialogue");
+        if (dialogueSection != null) {
+            Dialogue dialogue = new Dialogue();
+            dialogue.setAcceptDialogue(dialogueSection.getStringList("accept"));
+            dialogue.setProgressDialogue(dialogueSection.getStringList("progress"));
+            dialogue.setCompletionDialogue(dialogueSection.getStringList("completion"));
+            quest.setDialogue(dialogue);
+        }
+        
         return quest;
     }
     
