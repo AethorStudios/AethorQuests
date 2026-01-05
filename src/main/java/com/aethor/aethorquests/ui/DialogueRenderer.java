@@ -52,9 +52,9 @@ public class DialogueRenderer {
         }
         
         // Format: [Quest] <NPC Name>: <Dialogue Text>
-        Component messagparseMiniMessage(session.getNpcName
+        Component message = Component.empty()
                 .append(Component.text("[Quest] ", getPrefixColor(), TextDecoration.BOLD))
-                .append(Component.text(session.getNpcName(), getNpcColor()))
+                .append(parseMiniMessage(session.getNpcName()))
                 .append(Component.text(": ", NamedTextColor.GRAY))
                 .append(Component.text(translateColorCodes(line), getTextColor()));
         
